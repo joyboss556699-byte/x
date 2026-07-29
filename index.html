@@ -1,530 +1,512 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>XR7 Coin Sell</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<style>
-  :root{
-    --bg: #0e1116;
-    --panel: #161b22;
-    --panel-2: #1d232c;
-    --line: #2a323d;
-    --gold: #f0b429;
-    --gold-dim: #7a5c15;
-    --text: #eef1f5;
-    --muted: #8b96a5;
-    --danger: #e5534b;
-    --ok: #3fb950;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Bengali", sans-serif;
-    padding-bottom: 32px;
-  }
-  .topbar{
-    padding: 22px 20px 16px;
-    border-bottom: 1px solid var(--line);
-  }
-  .topbar .eyebrow{
-    font-size: 11px;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--gold);
-    font-weight: 700;
-  }
-  .topbar h1{
-    margin: 4px 0 0;
-    font-size: 24px;
-    font-weight: 800;
-    letter-spacing: -0.01em;
-  }
-  .status-pill{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    margin-top:10px;
-    font-size:12px;
-    color: var(--muted);
-    background: var(--panel-2);
-    border: 1px solid var(--line);
-    padding: 4px 10px;
-    border-radius: 20px;
-  }
-  .status-pill .dot{
-    width:6px; height:6px; border-radius:50%;
-    background: var(--ok);
-  }
-
-  .section{
-    padding: 20px;
-  }
-  .label{
-    font-size: 12px;
-    color: var(--muted);
-    margin-bottom: 8px;
-    display:block;
-    font-weight:600;
-  }
-
-  .coin-list{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    margin-bottom: 14px;
-  }
-  .coin-card{
-    background: var(--panel);
-    border: 1.5px solid var(--line);
-    border-radius: 14px;
-    padding: 14px 16px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    cursor:pointer;
-    transition: border-color .15s ease, background .15s ease;
-  }
-  .coin-card.active{
-    border-color: var(--gold);
-    background: linear-gradient(180deg, rgba(240,180,41,.08), rgba(240,180,41,.02));
-  }
-  .coin-card .name{
-    font-weight:700;
-    font-size:15px;
-  }
-  .coin-card .rate{
-    font-size:12px;
-    color: var(--muted);
-    margin-top:2px;
-  }
-  .coin-card .check{
-    width:20px; height:20px;
-    border-radius:50%;
-    border: 1.5px solid var(--line);
-    flex-shrink:0;
-  }
-  .coin-card.active .check{
-    border-color: var(--gold);
-    background: var(--gold);
-    position:relative;
-  }
-  .coin-card.active .check::after{
-    content:"";
-    position:absolute;
-    left:6px; top:2px;
-    width:5px; height:9px;
-    border: solid #0e1116;
-    border-width: 0 2px 2px 0;
-    transform: rotate(45deg);
-  }
-
-  .note-box{
-    background: rgba(240,180,41,.08);
-    border: 1px solid var(--gold-dim);
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 13px;
-    color: var(--gold);
-    margin: 0 0 18px;
-    display:none;
-    line-height:1.5;
-  }
-
-  .empty-note{
-    color: var(--muted);
-    font-size: 13px;
-    padding: 10px 2px;
-  }
-
-  input[type="number"], input[type="text"], select{
-    width:100%;
-    background: var(--panel);
-    border: 1.5px solid var(--line);
-    border-radius: 12px;
-    padding: 14px 14px;
-    color: var(--text);
-    font-size: 16px;
-    outline:none;
-  }
-  input:focus, select:focus{
-    border-color: var(--gold);
-  }
-  input::placeholder{ color:#556072; }
-  input:disabled{ opacity:.5; }
-
-  .field{ margin-bottom: 18px; }
-
-  .method-grid{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:10px;
-  }
-  .method-chip{
-    background: var(--panel);
-    border: 1.5px solid var(--line);
-    border-radius: 12px;
-    padding: 12px;
-    text-align:center;
-    font-size:14px;
-    font-weight:600;
-    cursor:pointer;
-  }
-  .method-chip.active{
-    border-color: var(--gold);
-    background: linear-gradient(180deg, rgba(240,180,41,.08), rgba(240,180,41,.02));
-    color: var(--gold);
-  }
-
-  .summary{
-    background: var(--panel-2);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 16px;
-    margin-top: 4px;
-  }
-  .summary-row{
-    display:flex;
-    justify-content:space-between;
-    font-size:13px;
-    color: var(--muted);
-    padding: 5px 0;
-  }
-  .summary-row.total{
-    color: var(--text);
-    font-size: 18px;
-    font-weight: 800;
-    border-top: 1px solid var(--line);
-    margin-top: 6px;
-    padding-top: 12px;
-  }
-  .summary-row.total .val{ color: var(--gold); }
-
-  .submit-btn{
-    width:100%;
-    background: var(--gold);
-    color: #1a1400;
-    border:none;
-    border-radius: 14px;
-    padding: 16px;
-    font-size: 16px;
-    font-weight: 800;
-    margin-top: 20px;
-    cursor:pointer;
-  }
-  .submit-btn:disabled{
-    background: #3a3a2e;
-    color: #6b6b5a;
-  }
-
-  .error-text{
-    color: var(--danger);
-    font-size: 12px;
-    margin-top: 6px;
-    display:none;
-  }
-
-  .screen{ display:none; }
-  .screen.visible{ display:block; }
-
-  .success-wrap{
-    text-align:center;
-    padding: 60px 24px;
-  }
-  .success-icon{
-    width: 64px; height:64px;
-    border-radius:50%;
-    background: rgba(63,185,80,.12);
-    border: 1.5px solid var(--ok);
-    display:flex; align-items:center; justify-content:center;
-    margin: 0 auto 20px;
-    font-size: 28px;
-  }
-  .success-wrap h2{ margin: 0 0 8px; font-size:20px; }
-  .success-wrap p{ color: var(--muted); font-size:14px; line-height:1.6; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>XR7 Coin Sell</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <style>
+        :root {
+            --bg: #0e1116;
+            --panel: #161b22;
+            --panel-2: #1d232c;
+            --line: #2a323d;
+            --gold: #f0b429;
+            --gold-dim: #7a5c15;
+            --text: #eef1f5;
+            --muted: #8b96a5;
+            --danger: #e5534b;
+            --ok: #3fb950;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans Bengali", sans-serif;
+            padding-bottom: 32px;
+        }
+        .topbar {
+            padding: 22px 20px 16px;
+            border-bottom: 1px solid var(--line);
+        }
+        .topbar .eyebrow {
+            font-size: 11px;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--gold);
+            font-weight: 700;
+        }
+        .topbar h1 {
+            margin: 4px 0 0;
+            font-size: 24px;
+            font-weight: 800;
+        }
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--muted);
+            background: var(--panel-2);
+            border: 1px solid var(--line);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .status-pill .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--ok);
+        }
+        .section { padding: 20px; }
+        .label {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 8px;
+            display: block;
+            font-weight: 600;
+        }
+        .coin-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .coin-card {
+            background: var(--panel);
+            border: 1.5px solid var(--line);
+            border-radius: 14px;
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: border-color .15s ease, background .15s ease;
+        }
+        .coin-card.active {
+            border-color: var(--gold);
+            background: linear-gradient(180deg, rgba(240,180,41,.08), rgba(240,180,41,.02));
+        }
+        .coin-card .name { font-weight: 700; font-size: 15px; }
+        .coin-card .rate { font-size: 12px; color: var(--muted); margin-top: 2px; }
+        .coin-card .check {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1.5px solid var(--line);
+            flex-shrink: 0;
+        }
+        .coin-card.active .check {
+            border-color: var(--gold);
+            background: var(--gold);
+            position: relative;
+        }
+        .coin-card.active .check::after {
+            content: "";
+            position: absolute;
+            left: 6px;
+            top: 2px;
+            width: 5px;
+            height: 9px;
+            border: solid #0e1116;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        .note-box {
+            background: rgba(240,180,41,.08);
+            border: 1px solid var(--gold-dim);
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 13px;
+            color: var(--gold);
+            margin: 0 0 18px;
+            display: none;
+            line-height: 1.5;
+        }
+        .empty-note {
+            color: var(--muted);
+            font-size: 13px;
+            padding: 10px 2px;
+        }
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            background: var(--panel);
+            border: 1.5px solid var(--line);
+            border-radius: 12px;
+            padding: 14px 14px;
+            color: var(--text);
+            font-size: 16px;
+            outline: none;
+        }
+        input:focus, select:focus { border-color: var(--gold); }
+        input::placeholder { color: #556072; }
+        input:disabled { opacity: .5; }
+        .field { margin-bottom: 18px; }
+        .method-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .method-chip {
+            background: var(--panel);
+            border: 1.5px solid var(--line);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .method-chip.active {
+            border-color: var(--gold);
+            background: linear-gradient(180deg, rgba(240,180,41,.08), rgba(240,180,41,.02));
+            color: var(--gold);
+        }
+        .summary {
+            background: var(--panel-2);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 16px;
+            margin-top: 4px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--muted);
+            padding: 5px 0;
+        }
+        .summary-row.total {
+            color: var(--text);
+            font-size: 18px;
+            font-weight: 800;
+            border-top: 1px solid var(--line);
+            margin-top: 6px;
+            padding-top: 12px;
+        }
+        .summary-row.total .val { color: var(--gold); }
+        .submit-btn {
+            width: 100%;
+            background: var(--gold);
+            color: #1a1400;
+            border: none;
+            border-radius: 14px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 800;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        .submit-btn:disabled {
+            background: #3a3a2e;
+            color: #6b6b5a;
+        }
+        .error-text {
+            color: var(--danger);
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+        }
+        .screen { display: none; }
+        .screen.visible { display: block; }
+        .success-wrap {
+            text-align: center;
+            padding: 60px 24px;
+        }
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(63,185,80,.12);
+            border: 1.5px solid var(--ok);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 28px;
+        }
+        .success-wrap h2 { margin: 0 0 8px; font-size: 20px; }
+        .success-wrap p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+    </style>
 </head>
 <body>
 
 <div class="topbar">
-  <span class="eyebrow">XR7 Panel</span>
-  <h1>কয়েন সেল করুন</h1>
-  <div class="status-pill"><span class="dot" id="statusDot"></span><span id="statusText">লোড হচ্ছে...</span></div>
+    <span class="eyebrow">XR7 Panel</span>
+    <h1>কয়েন সেল করুন</h1>
+    <div class="status-pill"><span class="dot" id="statusDot"></span><span id="statusText">লোড হচ্ছে...</span></div>
 </div>
 
 <div id="formScreen" class="screen visible">
-  <div class="section">
-    <span class="label">কোন কয়েন বিক্রি করবেন</span>
-    <div class="coin-list" id="coinList">
-      <div class="empty-note">কয়েন লিস্ট লোড হচ্ছে...</div>
+    <div class="section">
+        <span class="label">কোন কয়েন বিক্রি করবেন</span>
+        <div class="coin-list" id="coinList">
+            <div class="empty-note">কয়েন লিস্ট লোড হচ্ছে...</div>
+        </div>
+
+        <div class="note-box" id="noteBox"></div>
+
+        <div class="field">
+            <span class="label">পরিমাণ (কয়েন সংখ্যা)</span>
+            <input type="number" id="amountInput" placeholder="যেমন: 1000" inputmode="numeric" min="1">
+            <div class="error-text" id="amountError">শুধু ০ এর বেশি সংখ্যা দিন</div>
+        </div>
+
+        <div class="field">
+            <span class="label">পেমেন্ট মেথড</span>
+            <div class="method-grid" id="methodGrid"></div>
+        </div>
+
+        <div class="field" id="couponField" style="display:none;">
+            <span class="label">কুপন / কোড</span>
+            <input type="text" id="couponInput" placeholder="আপনার কুপন বা কোড লিখুন">
+            <div class="error-text" id="couponError">কুপন/কোড দিন</div>
+        </div>
+
+        <div class="field">
+            <span class="label">অ্যাকাউন্ট নাম্বার</span>
+            <input type="text" id="accountInput" placeholder="বিকাশ/নগদ/রকেট/ব্যাংক নাম্বার" inputmode="numeric">
+            <div class="error-text" id="accountError">সঠিক অ্যাকাউন্ট নাম্বার দিন</div>
+        </div>
+
+        <div class="summary">
+            <div class="summary-row"><span>রেট</span><span id="rateDisplay">—</span></div>
+            <div class="summary-row"><span>পরিমাণ</span><span id="amountDisplay">০ কয়েন</span></div>
+            <div class="summary-row total"><span>মোট পাবেন</span><span class="val" id="totalDisplay">০.০০ টাকা</span></div>
+        </div>
+
+        <button class="submit-btn" id="submitBtn" disabled>সেল রিকোয়েস্ট পাঠান</button>
     </div>
-
-    <div class="note-box" id="noteBox"></div>
-
-    <div class="field">
-      <span class="label">পরিমাণ (কয়েন সংখ্যা)</span>
-      <input type="number" id="amountInput" placeholder="যেমন: 1000" inputmode="numeric" min="1">
-      <div class="error-text" id="amountError">শুধু ০ এর বেশি সংখ্যা দিন</div>
-    </div>
-
-    <div class="field">
-      <span class="label">পেমেন্ট মেথড</span>
-      <div class="method-grid" id="methodGrid"></div>
-    </div>
-
-    <div class="field" id="couponField" style="display:none;">
-      <span class="label">কুপন / কোড</span>
-      <input type="text" id="couponInput" placeholder="আপনার কুপন বা কোড লিখুন">
-      <div class="error-text" id="couponError">কুপন/কোড দিন</div>
-    </div>
-
-    <div class="field">
-      <span class="label">অ্যাকাউন্ট নাম্বার</span>
-      <input type="text" id="accountInput" placeholder="বিকাশ/নগদ/রকেট/ব্যাংক নাম্বার" inputmode="numeric">
-      <div class="error-text" id="accountError">সঠিক অ্যাকাউন্ট নাম্বার দিন</div>
-    </div>
-
-    <div class="summary">
-      <div class="summary-row"><span>রেট</span><span id="rateDisplay">—</span></div>
-      <div class="summary-row"><span>পরিমাণ</span><span id="amountDisplay">০ কয়েন</span></div>
-      <div class="summary-row total"><span>মোট পাবেন</span><span class="val" id="totalDisplay">০.০০ টাকা</span></div>
-    </div>
-
-    <button class="submit-btn" id="submitBtn" disabled>সেল রিকোয়েস্ট পাঠান</button>
-  </div>
 </div>
 
 <div id="successScreen" class="screen">
-  <div class="success-wrap">
-    <div class="success-icon">✓</div>
-    <h2 id="successTitle">রিকোয়েস্ট পাঠানো হয়েছে</h2>
-    <p id="successText">আপনার কয়েন সেল রিকোয়েস্ট বটে পৌঁছে গেছে।<br>অ্যাডমিন যাচাই করার পর টাকা পাঠানো হবে।<br>এই উইন্ডো বন্ধ করে বটে ফিরে যান।</p>
-  </div>
+    <div class="success-wrap">
+        <div class="success-icon">✓</div>
+        <h2 id="successTitle">রিকোয়েস্ট পাঠানো হয়েছে</h2>
+        <p id="successText">আপনার কয়েন সেল রিকোয়েস্ট বটে পৌঁছে গেছে।<br>অ্যাডমিন যাচাই করার পর টাকা পাঠানো হবে।<br>এই উইন্ডো বন্ধ করে বটে ফিরে যান।</p>
+    </div>
 </div>
 
 <script>
-  const tg = window.Telegram.WebApp;
-  tg.ready();
-  tg.expand();
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
 
-  // ==================== Firebase Config ====================
-  const firebaseConfig = {
-    apiKey: "AIzaSyA7iEsZI2wlTd-a_34AbJswK602Cjkd7i",
-    authDomain: "xr7-task.firebaseapp.com",
-    projectId: "xr7-task",
-    storageBucket: "xr7-task.firebasestorage.app",
-    messagingSenderId: "934803666532",
-    appId: "1:934803666532:web:c8699df5227cdf4719"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  // ==================== স্টেট ====================
-  let COINS = {};
-  let PAYMENT_METHODS = [];
-  let sellingStatus = 'closed';
-  let selectedCoinName = null;
-  let selectedMethod = null;
-
-  const coinList = document.getElementById('coinList');
-  const methodGrid = document.getElementById('methodGrid');
-  const amountField = document.getElementById('amountInput');
-  const accountField = document.getElementById('accountInput');
-  const couponField = document.getElementById('couponField');
-  const couponInput = document.getElementById('couponInput');
-  const submitBtn = document.getElementById('submitBtn');
-  const statusText = document.getElementById('statusText');
-  const statusDot = document.getElementById('statusDot');
-  const noteBox = document.getElementById('noteBox');
-
-  // ==================== লাইভ সেটিংস (রিয়েল-টাইম) ====================
-  // ⭐ অ্যাডমিন প্যানেল থেকে কিছু পরিবর্তন করলেই এখানে অটো আপডেট হবে
-  db.collection('xr7_settings').doc('main').onSnapshot((doc) => {
-    if (!doc.exists) {
-      statusText.textContent = 'সেটিংস পাওয়া যায়নি';
-      return;
-    }
-    const data = doc.data();
-    COINS = data.coins || {};
-    PAYMENT_METHODS = data.payment_methods || [];
-    sellingStatus = data.selling_status || 'closed';
-    
-    // 🔥 সিলেক্টেড কয়েন যদি OFF হয়ে যায়, তাহলে অটো রিমুভ হবে
-    if (selectedCoinName && COINS[selectedCoinName] && COINS[selectedCoinName].active === false) {
-      selectedCoinName = null;
-    }
-    
-    renderStatus();
-    renderCoins();
-    renderMethods();
-  }, (err) => {
-    console.error('Settings fetch error:', err);
-    statusText.textContent = 'ডেটা লোড করতে সমস্যা হচ্ছে';
-    statusDot.style.background = 'var(--danger)';
-  });
-
-  function renderStatus(){
-    if (sellingStatus === 'open') {
-      statusText.textContent = 'সেলিং চালু আছে';
-      statusDot.style.background = 'var(--ok)';
-    } else {
-      statusText.textContent = 'সেলিং বর্তমানে বন্ধ';
-      statusDot.style.background = 'var(--danger)';
-    }
-    validateForm();
-  }
-
-  function renderCoins(){
-    coinList.innerHTML = '';
-    // 🔥 শুধু active কয়েন দেখাবে (OFF করলে অটো চলে যাবে)
-    const activeCoins = Object.entries(COINS).filter(([_, c]) => c && c.active !== false);
-
-    if (activeCoins.length === 0) {
-      coinList.innerHTML = '<div class="empty-note">এই মুহূর্তে কোনো কয়েন সেলের জন্য উপলব্ধ নেই।</div>';
-      selectedCoinName = null;
-      updateSummary();
-      return;
-    }
-
-    if (!selectedCoinName || !COINS[selectedCoinName] || COINS[selectedCoinName].active === false) {
-      selectedCoinName = activeCoins[0][0];
-    }
-
-    activeCoins.forEach(([name, coin]) => {
-      const card = document.createElement('div');
-      card.className = 'coin-card' + (name === selectedCoinName ? ' active' : '');
-      card.innerHTML =
-        '<div>' +
-          '<div class="name">' + name + '</div>' +
-          '<div class="rate">প্রতি ১,০০০ কয়েনে ' + (coin.rate ?? 0) + ' টাকা</div>' +
-        '</div>' +
-        '<div class="check"></div>';
-      card.addEventListener('click', () => {
-        selectedCoinName = name;
-        renderCoins();
-        updateSummary();
-      });
-      coinList.appendChild(card);
-    });
-
-    updateSummary();
-  }
-
-  function renderMethods(){
-    const methods = PAYMENT_METHODS.length ? PAYMENT_METHODS : ["বিকাশ", "নগদ", "রকেট", "ব্যাংক"];
-    if (!selectedMethod || !methods.includes(selectedMethod)) {
-      selectedMethod = methods[0];
-    }
-    methodGrid.innerHTML = '';
-    methods.forEach((method) => {
-      const chip = document.createElement('div');
-      chip.className = 'method-chip' + (method === selectedMethod ? ' active' : '');
-      chip.textContent = method;
-      chip.addEventListener('click', () => {
-        selectedMethod = method;
-        renderMethods();
-        validateForm();
-      });
-      methodGrid.appendChild(chip);
-    });
-  }
-
-  function currentCoin(){
-    return selectedCoinName ? COINS[selectedCoinName] : null;
-  }
-
-  function updateSummary(){
-    const coin = currentCoin();
-    const amount = parseInt(amountField.value || '0', 10);
-    const rate = coin ? (coin.rate || 0) : 0;
-    const total = (amount / 1000) * rate;
-
-    document.getElementById('rateDisplay').textContent = coin ? (rate + ' টাকা / ১,০০০ কয়েন') : '—';
-    document.getElementById('amountDisplay').textContent = amount.toLocaleString('en-US') + ' কয়েন';
-    document.getElementById('totalDisplay').textContent = total.toFixed(2) + ' টাকা';
-
-    const note = coin && coin.admin_note ? String(coin.admin_note).trim() : '';
-    if (note) {
-      noteBox.textContent = '📌 ' + note;
-      noteBox.style.display = 'block';
-    } else {
-      noteBox.style.display = 'none';
-    }
-
-    if (coin && coin.requires_coupon_code) {
-      couponField.style.display = 'block';
-    } else {
-      couponField.style.display = 'none';
-      couponInput.value = '';
-    }
-
-    validateForm();
-  }
-
-  function validateForm(){
-    const coin = currentCoin();
-    const amount = parseInt(amountField.value || '0', 10);
-    const account = accountField.value.trim();
-
-    const amountOk = amount > 0;
-    const accountOk = account.length >= 6;
-    const couponNeeded = !!(coin && coin.requires_coupon_code);
-    const couponOk = !couponNeeded || couponInput.value.trim().length > 0;
-
-    document.getElementById('amountError').style.display = (amountField.value && !amountOk) ? 'block' : 'none';
-    document.getElementById('accountError').style.display = (accountField.value && !accountOk) ? 'block' : 'none';
-    document.getElementById('couponError').style.display = (couponNeeded && couponInput.value && !couponOk) ? 'block' : 'none';
-
-    const formValid = sellingStatus === 'open' && !!coin && amountOk && accountOk && !!selectedMethod && couponOk;
-    submitBtn.disabled = !formValid;
-  }
-
-  amountField.addEventListener('input', updateSummary);
-  accountField.addEventListener('input', validateForm);
-  couponInput.addEventListener('input', validateForm);
-
-  submitBtn.addEventListener('click', () => {
-    const coin = currentCoin();
-    if (!coin || !selectedCoinName) return;
-
-    const amount = parseInt(amountField.value || '0', 10);
-    const account = accountField.value.trim();
-    const total = (amount / 1000) * (coin.rate || 0);
-
-    const payload = {
-      action: "xr7_sell_request",
-      coin_name: selectedCoinName,
-      amount: amount,
-      payment_method: selectedMethod,
-      account_number: account,
-      estimated_total: Number(total.toFixed(2))
+    // Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyA7iEsZI2wlTd-a_34AbJswK602Cjkd7i",
+        authDomain: "xr7-task.firebaseapp.com",
+        projectId: "xr7-task",
+        storageBucket: "xr7-task.firebasestorage.app",
+        messagingSenderId: "934803666532",
+        appId: "1:934803666532:web:c8699df5227cdf4719"
     };
 
-    if (coin.requires_coupon_code) {
-      payload.coupon_code = couponInput.value.trim();
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let COINS = {};
+    let PAYMENT_METHODS = [];
+    let sellingStatus = 'closed';
+    let selectedCoinName = null;
+    let selectedMethod = null;
+
+    const coinList = document.getElementById('coinList');
+    const methodGrid = document.getElementById('methodGrid');
+    const amountField = document.getElementById('amountInput');
+    const accountField = document.getElementById('accountInput');
+    const couponField = document.getElementById('couponField');
+    const couponInput = document.getElementById('couponInput');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusText = document.getElementById('statusText');
+    const statusDot = document.getElementById('statusDot');
+    const noteBox = document.getElementById('noteBox');
+
+    // Real-time listener
+    db.collection('xr7_settings').doc('main').onSnapshot((doc) => {
+        if (!doc.exists) {
+            statusText.textContent = 'সেটিংস পাওয়া যায়নি';
+            return;
+        }
+        const data = doc.data();
+        console.log("🔥 Firestore Data:", data); // 🔥 Console-এ দেখুন
+        COINS = data.coins || {};
+        PAYMENT_METHODS = data.payment_methods || [];
+        sellingStatus = data.selling_status || 'closed';
+
+        if (selectedCoinName && COINS[selectedCoinName] && COINS[selectedCoinName].active === false) {
+            selectedCoinName = null;
+        }
+
+        renderStatus();
+        renderCoins();
+        renderMethods();
+    }, (err) => {
+        console.error('Settings fetch error:', err);
+        statusText.textContent = 'ডেটা লোড করতে সমস্যা হচ্ছে';
+        statusDot.style.background = 'var(--danger)';
+    });
+
+    function renderStatus() {
+        if (sellingStatus === 'open') {
+            statusText.textContent = 'সেলিং চালু আছে';
+            statusDot.style.background = 'var(--ok)';
+        } else {
+            statusText.textContent = 'সেলিং বর্তমানে বন্ধ';
+            statusDot.style.background = 'var(--danger)';
+        }
+        validateForm();
     }
 
-    tg.sendData(JSON.stringify(payload));
+    function renderCoins() {
+        coinList.innerHTML = '';
+        const activeCoins = Object.entries(COINS).filter(([_, c]) => c && c.active !== false);
+        console.log("🪙 Active Coins:", activeCoins); // 🔥 Console-এ দেখুন
 
-    if (coin.requires_coupon_code) {
-      document.getElementById('successText').innerHTML =
-        'আপনার কয়েন সেল রিকোয়েস্ট বটে পৌঁছে গেছে এবং সাবমিট হয়ে গেছে।<br>অ্যাডমিন যাচাই করার পর টাকা পাঠানো হবে।<br>এই উইন্ডো বন্ধ করে বটে ফিরে যান।';
-    } else {
-      document.getElementById('successText').innerHTML =
-        'আপনার কয়েন সেল রিকোয়েস্ট বটে পৌঁছে গেছে।<br>এখন বটে ফিরে ট্রান্সফারের স্ক্রিনশট আপলোড করুন।<br>স্ক্রিনশট দেওয়ার পরই সাবমিশন সম্পূর্ণ হবে।';
+        if (activeCoins.length === 0) {
+            coinList.innerHTML = '<div class="empty-note">এই মুহূর্তে কোনো কয়েন সেলের জন্য উপলব্ধ নেই।</div>';
+            selectedCoinName = null;
+            updateSummary();
+            return;
+        }
+
+        if (!selectedCoinName || !COINS[selectedCoinName] || COINS[selectedCoinName].active === false) {
+            selectedCoinName = activeCoins[0][0];
+        }
+
+        activeCoins.forEach(([name, coin]) => {
+            const card = document.createElement('div');
+            card.className = 'coin-card' + (name === selectedCoinName ? ' active' : '');
+            card.innerHTML =
+                '<div>' +
+                '<div class="name">' + name + '</div>' +
+                '<div class="rate">প্রতি ১,০০০ কয়েনে ' + (coin.rate ?? 0) + ' টাকা</div>' +
+                '</div>' +
+                '<div class="check"></div>';
+            card.addEventListener('click', () => {
+                selectedCoinName = name;
+                renderCoins();
+                updateSummary();
+            });
+            coinList.appendChild(card);
+        });
+
+        updateSummary();
     }
 
-    document.getElementById('formScreen').classList.remove('visible');
-    document.getElementById('successScreen').classList.add('visible');
+    function renderMethods() {
+        const methods = PAYMENT_METHODS.length ? PAYMENT_METHODS : ["বিকাশ", "নগদ", "রকেট", "ব্যাংক"];
+        if (!selectedMethod || !methods.includes(selectedMethod)) {
+            selectedMethod = methods[0];
+        }
+        methodGrid.innerHTML = '';
+        methods.forEach((method) => {
+            const chip = document.createElement('div');
+            chip.className = 'method-chip' + (method === selectedMethod ? ' active' : '');
+            chip.textContent = method;
+            chip.addEventListener('click', () => {
+                selectedMethod = method;
+                renderMethods();
+                validateForm();
+            });
+            methodGrid.appendChild(chip);
+        });
+    }
 
-    setTimeout(() => tg.close(), 2200);
-  });
+    function currentCoin() {
+        return selectedCoinName ? COINS[selectedCoinName] : null;
+    }
+
+    function updateSummary() {
+        const coin = currentCoin();
+        const amount = parseInt(amountField.value || '0', 10);
+        const rate = coin ? (coin.rate || 0) : 0;
+        const total = (amount / 1000) * rate;
+
+        document.getElementById('rateDisplay').textContent = coin ? (rate + ' টাকা / ১,০০০ কয়েন') : '—';
+        document.getElementById('amountDisplay').textContent = amount.toLocaleString('en-US') + ' কয়েন';
+        document.getElementById('totalDisplay').textContent = total.toFixed(2) + ' টাকা';
+
+        const note = coin && coin.admin_note ? String(coin.admin_note).trim() : '';
+        if (note) {
+            noteBox.textContent = '📌 ' + note;
+            noteBox.style.display = 'block';
+        } else {
+            noteBox.style.display = 'none';
+        }
+
+        if (coin && coin.requires_coupon_code) {
+            couponField.style.display = 'block';
+        } else {
+            couponField.style.display = 'none';
+            couponInput.value = '';
+        }
+
+        validateForm();
+    }
+
+    function validateForm() {
+        const coin = currentCoin();
+        const amount = parseInt(amountField.value || '0', 10);
+        const account = accountField.value.trim();
+
+        const amountOk = amount > 0;
+        const accountOk = account.length >= 6;
+        const couponNeeded = !!(coin && coin.requires_coupon_code);
+        const couponOk = !couponNeeded || couponInput.value.trim().length > 0;
+
+        document.getElementById('amountError').style.display = (amountField.value && !amountOk) ? 'block' : 'none';
+        document.getElementById('accountError').style.display = (accountField.value && !accountOk) ? 'block' : 'none';
+        document.getElementById('couponError').style.display = (couponNeeded && couponInput.value && !couponOk) ? 'block' : 'none';
+
+        const formValid = sellingStatus === 'open' && !!coin && amountOk && accountOk && !!selectedMethod && couponOk;
+        submitBtn.disabled = !formValid;
+    }
+
+    amountField.addEventListener('input', updateSummary);
+    accountField.addEventListener('input', validateForm);
+    couponInput.addEventListener('input', validateForm);
+
+    submitBtn.addEventListener('click', () => {
+        const coin = currentCoin();
+        if (!coin || !selectedCoinName) return;
+
+        const amount = parseInt(amountField.value || '0', 10);
+        const account = accountField.value.trim();
+        const total = (amount / 1000) * (coin.rate || 0);
+
+        const payload = {
+            action: "xr7_sell_request",
+            coin_name: selectedCoinName,
+            amount: amount,
+            payment_method: selectedMethod,
+            account_number: account,
+            estimated_total: Number(total.toFixed(2))
+        };
+
+        if (coin.requires_coupon_code) {
+            payload.coupon_code = couponInput.value.trim();
+        }
+
+        tg.sendData(JSON.stringify(payload));
+
+        if (coin.requires_coupon_code) {
+            document.getElementById('successText').innerHTML =
+                'আপনার কয়েন সেল রিকোয়েস্ট বটে পৌঁছে গেছে এবং সাবমিট হয়ে গেছে।<br>অ্যাডমিন যাচাই করার পর টাকা পাঠানো হবে।<br>এই উইন্ডো বন্ধ করে বটে ফিরে যান।';
+        } else {
+            document.getElementById('successText').innerHTML =
+                'আপনার কয়েন সেল রিকোয়েস্ট বটে পৌঁছে গেছে।<br>এখন বটে ফিরে ট্রান্সফারের স্ক্রিনশট আপলোড করুন।<br>স্ক্রিনশট দেওয়ার পরই সাবমিশন সম্পূর্ণ হবে।';
+        }
+
+        document.getElementById('formScreen').classList.remove('visible');
+        document.getElementById('successScreen').classList.add('visible');
+
+        setTimeout(() => tg.close(), 2200);
+    });
 </script>
 </body>
 </html>
