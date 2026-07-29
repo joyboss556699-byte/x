@@ -312,11 +312,7 @@
   tg.ready();
   tg.expand();
 
-  // ==================== Firebase কনফিগ ====================
-  // 🔧 এখানে নিজের Firebase প্রজেক্টের ওয়েব কনফিগ বসান।
-  // পাবেন: Firebase Console → Project settings (⚙️ আইকন) → General ট্যাব →
-  // "Your apps" সেকশনে Web app (</>) → SDK setup and configuration → Config
-  // এটা বটের service-account key না — এটা পাবলিক ওয়েব কনফিগ, ব্রাউজারে থাকা নিরাপদ।
+  // ==================== Firebase Config ====================
   const firebaseConfig = {
     apiKey: "AIzaSyA7iEsZI2wlTd-a_34AbJswK602Cjkd7i",
     authDomain: "xr7-task.firebaseapp.com",
@@ -325,14 +321,6 @@
     messagingSenderId: "934803666532",
     appId: "1:934803666532:web:c8699df5227cdf4719"
   };
-
-  if (firebaseConfig.apiKey === "YOUR_API_KEY") {
-    document.body.innerHTML =
-      '<div style="padding:50px 24px; text-align:center; color:#e5534b; font-family:sans-serif; line-height:1.7;">' +
-      '⚠️ Firebase কনফিগ সেট করা হয়নি।<br>index.html ফাইলের firebaseConfig অবজেক্টটা পূরণ করুন,<br>' +
-      'তারপর Firestore Rules-এ xr7_settings রিড-অ্যাক্সেস খুলে দিন।</div>';
-    throw new Error('Firebase config not set');
-  }
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
@@ -356,9 +344,7 @@
   const noteBox = document.getElementById('noteBox');
 
   // ==================== লাইভ সেটিংস (রিয়েল-টাইম) ====================
-  // অ্যাডমিন প্যানেল থেকে কয়েন অন/অফ, রেট, নোট, কুপন-কোড রিকোয়ারমেন্ট,
-  // পেমেন্ট মেথড বা সেলিং স্ট্যাটাস বদলালেই এখানে সাথে সাথে রিফ্লেক্ট হবে —
-  // ফাইল আর এডিট করা লাগবে না, নতুন কয়েন যোগ করলেও এখানে নিজে থেকেই আসবে।
+  // ⭐ অ্যাডমিন প্যানেল থেকে কিছু পরিবর্তন করলেই এখানে অটো আপডেট হবে
   db.collection('xr7_settings').doc('main').onSnapshot((doc) => {
     if (!doc.exists) {
       statusText.textContent = 'সেটিংস পাওয়া যায়নি';
@@ -368,6 +354,12 @@
     COINS = data.coins || {};
     PAYMENT_METHODS = data.payment_methods || [];
     sellingStatus = data.selling_status || 'closed';
+    
+    // 🔥 সিলেক্টেড কয়েন যদি OFF হয়ে যায়, তাহলে অটো রিমুভ হবে
+    if (selectedCoinName && COINS[selectedCoinName] && COINS[selectedCoinName].active === false) {
+      selectedCoinName = null;
+    }
+    
     renderStatus();
     renderCoins();
     renderMethods();
@@ -390,8 +382,7 @@
 
   function renderCoins(){
     coinList.innerHTML = '';
-    // 🔧 বাগ ফিক্স: অ্যাডমিন যে কয়েন OFF করে রাখবে সেটা এখানে
-    // একদমই দেখানো হয় না, ON করলে আবার লিস্টে ফিরে আসবে।
+    // 🔥 শুধু active কয়েন দেখাবে (OFF করলে অটো চলে যাবে)
     const activeCoins = Object.entries(COINS).filter(([_, c]) => c && c.active !== false);
 
     if (activeCoins.length === 0) {
@@ -458,7 +449,6 @@
     document.getElementById('amountDisplay').textContent = amount.toLocaleString('en-US') + ' কয়েন';
     document.getElementById('totalDisplay').textContent = total.toFixed(2) + ' টাকা';
 
-    // অ্যাডমিনের সেট করা নোট (যেমন: কোন Instagram username-এ পাঠাতে হবে)
     const note = coin && coin.admin_note ? String(coin.admin_note).trim() : '';
     if (note) {
       noteBox.textContent = '📌 ' + note;
@@ -467,8 +457,6 @@
       noteBox.style.display = 'none';
     }
 
-    // কুপন-কোড ভিত্তিক কয়েন হলে আলাদা ফিল্ড দেখাও (স্ক্রিনশট লাগবে না, তাই
-    // এখানেই ফাইনাল সাবমিট হয়ে যাবে — চ্যাটে আর কিছু আপলোড করা লাগবে না)
     if (coin && coin.requires_coupon_code) {
       couponField.style.display = 'block';
     } else {
@@ -524,8 +512,6 @@
 
     tg.sendData(JSON.stringify(payload));
 
-    // কুপন-কোড কয়েনের জন্য বট সাথে সাথেই সাবমিশন ফাইনাল করে দেয় (স্ক্রিনশট লাগে না);
-    // স্ক্রিনশট-ভিত্তিক কয়েনের জন্য বট চ্যাটে ফিরে স্ক্রিনশট চাইবে।
     if (coin.requires_coupon_code) {
       document.getElementById('successText').innerHTML =
         'আপনার কয়েন সেল রিকোয়েস্ট বটে পৌঁছে গেছে এবং সাবমিট হয়ে গেছে।<br>অ্যাডমিন যাচাই করার পর টাকা পাঠানো হবে।<br>এই উইন্ডো বন্ধ করে বটে ফিরে যান।';
