@@ -3,340 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XR7 PANEL - কয়েন সেল</title>
+    <title>XR7 Task - কয়েন সেল</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
             color: #fff; 
             padding: 20px;
             min-height: 100vh;
         }
         .container { max-width: 600px; margin: 0 auto; }
-        
-        /* নোটিশ বক্স */
-        .notification-box {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            border-radius: 15px;
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            animation: slideDown 0.5s ease;
-            border-left: 5px solid #fff;
-            display: none;
-        }
-        .notification-box.show { display: block; }
-        .notification-box h3 { 
-            font-size: 16px; 
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .notification-box p { font-size: 14px; line-height: 1.6; }
-        .notification-box .time { 
-            font-size: 12px; 
-            opacity: 0.9; 
-            margin-top: 8px;
-            display: block;
-        }
-        
-        /* হেডার */
         .header { 
-            background: rgba(255,255,255,0.15); 
-            padding: 30px 20px; 
-            border-radius: 20px; 
+            background: rgba(255,255,255,0.1); 
+            padding: 20px; 
+            border-radius: 15px; 
             text-align: center;
             margin-bottom: 20px;
             backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.2);
         }
-        .header h1 { 
-            color: #FFD700; 
-            font-size: 32px; 
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            animation: glow 2s ease-in-out infinite;
-        }
-        @keyframes glow {
-            0%, 100% { text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
-            50% { text-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700; }
-        }
+        .header h1 { color: #FFD700; font-size: 28px; margin-bottom: 10px; }
         .status { 
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px; 
-            background: linear-gradient(135deg, #11998e, #38ef7d);
-            border-radius: 25px; 
+            display: inline-block; 
+            padding: 8px 20px; 
+            background: #2d5a2d; 
+            border-radius: 20px; 
             font-size: 14px;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(56, 239, 125, 0.4);
-            animation: pulse 2s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
         }
         .status::before { 
             content: "●"; 
-            color: #fff; 
+            color: #4CAF50; 
+            margin-right: 5px; 
+        }
+        .debug-info {
+            background: rgba(0,255,0,0.1);
+            border-left: 3px solid #4CAF50;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0;
             font-size: 12px;
-            animation: blink 1.5s ease-in-out infinite;
+            font-family: monospace;
         }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-        
-        /* ফর্ম গ্রুপ */
         .form-group { 
-            background: rgba(255,255,255,0.1); 
-            padding: 25px; 
-            border-radius: 15px; 
-            margin-bottom: 20px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.05); 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-bottom: 15px;
         }
-        label { 
-            display: block; 
-            margin-bottom: 12px; 
-            font-weight: 600; 
-            color: #fff;
-            font-size: 15px;
-        }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #aaa; }
         select, input { 
             width: 100%; 
-            padding: 15px; 
-            border: 2px solid rgba(255,255,255,0.3); 
-            border-radius: 12px; 
-            background: rgba(255,255,255,0.15); 
+            padding: 12px; 
+            border: 1px solid rgba(255,255,255,0.2); 
+            border-radius: 8px; 
+            background: rgba(255,255,255,0.1); 
             color: #fff; 
             font-size: 16px;
-            transition: all 0.3s;
         }
-        select:focus, input:focus { 
-            outline: none;
-            border-color: #FFD700;
-            background: rgba(255,255,255,0.25);
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-        }
-        select option { 
-            background: #2d2d44; 
-            color: #fff; 
-        }
-        
-        /* পেমেন্ট বাটন */
+        select option { background: #2d2d44; color: #fff; }
         .payment-methods { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
-            gap: 12px; 
+            gap: 10px; 
             margin: 15px 0;
         }
         .payment-btn { 
-            padding: 15px; 
-            border: 2px solid rgba(255,255,255,0.3); 
-            border-radius: 12px; 
+            padding: 12px; 
+            border: 2px solid rgba(255,255,255,0.2); 
+            border-radius: 8px; 
             background: rgba(255,255,255,0.1); 
             color: #fff; 
             cursor: pointer;
             transition: all 0.3s;
-            font-weight: 600;
-            font-size: 14px;
-        }
-        .payment-btn:hover { 
-            background: rgba(255,255,255,0.2);
-            transform: translateY(-2px);
         }
         .payment-btn.active { 
             border-color: #FFD700; 
-            background: linear-gradient(135deg, #FFD700, #FFA500); 
-            color: #000;
-            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
-            transform: translateY(-3px);
+            background: rgba(255,215,0,0.2); 
+            color: #FFD700;
         }
-        
-        /* ইনফো বক্স */
         .info-box { 
-            background: linear-gradient(135deg, rgba(255,193,7,0.2), rgba(255,193,7,0.1)); 
-            border-left: 5px solid #FFC107; 
-            padding: 15px; 
+            background: rgba(255,193,7,0.1); 
+            border-left: 4px solid #FFC107; 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin: 15px 0;
+        }
+        .rate-info { color: #FFD700; font-size: 18px; font-weight: bold; }
+        .total-box { 
+            background: linear-gradient(135deg, #4CAF50, #45a049); 
+            padding: 20px; 
             border-radius: 12px; 
+            text-align: center;
             margin: 20px 0;
         }
-        .rate-info { color: #FFD700; font-size: 24px; font-weight: bold; }
-        
-        /* টোটাল বক্স */
-        .total-box { 
-            background: linear-gradient(135deg, #11998e, #38ef7d); 
-            padding: 25px; 
-            border-radius: 15px; 
-            text-align: center;
-            margin: 25px 0;
-            box-shadow: 0 10px 30px rgba(56, 239, 125, 0.3);
-            border: 2px solid rgba(255,255,255,0.2);
-        }
-        .total-label { font-size: 16px; margin-bottom: 10px; opacity: 0.95; }
-        .total-amount { 
-            font-size: 42px; 
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-        .coin-amount {
-            font-size: 18px;
-            margin-top: 10px;
-            opacity: 0.9;
-        }
-        
-        /* সাবমিট বাটন */
+        .total-amount { font-size: 32px; font-weight: bold; }
         .submit-btn { 
             width: 100%; 
-            padding: 18px; 
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); 
+            padding: 15px; 
+            background: linear-gradient(135deg, #2196F3, #1976D2); 
             border: none; 
-            border-radius: 15px; 
+            border-radius: 12px; 
             color: #fff; 
-            font-size: 20px; 
+            font-size: 18px; 
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            transition: transform 0.2s;
         }
-        .submit-btn:hover { 
-            transform: translateY(-3px);
-            box-shadow: 0 12px 35px rgba(245, 87, 108, 0.5);
-        }
-        .submit-btn:active { transform: translateY(-1px); }
+        .submit-btn:active { transform: scale(0.98); }
         .submit-btn:disabled { 
             background: #555; 
             cursor: not-allowed; 
             transform: none;
-            box-shadow: none;
         }
-        
-        /* লোডিং */
         .loading { 
             text-align: center; 
-            padding: 60px 20px; 
-            color: #fff;
+            padding: 40px; 
+            color: #4CAF50;
         }
-        .loading p { 
-            font-size: 18px;
-            animation: fadeInOut 1.5s ease-in-out infinite;
-        }
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-        
-        /* এরর */
         .error { 
-            background: linear-gradient(135deg, rgba(244,67,54,0.3), rgba(244,67,54,0.1)); 
-            border-left: 5px solid #F44336; 
-            padding: 20px; 
-            border-radius: 12px; 
-            margin: 20px 0;
-            color: #fff;
-            box-shadow: 0 5px 20px rgba(244, 67, 54, 0.3);
+            background: rgba(244,67,54,0.2); 
+            border-left: 4px solid #F44336; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin: 15px 0;
+            color: #ff6b6b;
         }
-        
-        /* হিডেন */
         .hidden { display: none; }
-        
-        /* স্লাইড ডাউন অ্যানিমেশন */
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- নোটিশ বক্স -->
-        <div id="notificationBox" class="notification-box">
-            <h3>📢 গুরুত্বপূর্ণ নোটিশ</h3>
-            <p id="notificationText"></p>
-            <span class="time" id="notificationTime"></span>
-        </div>
-
-        <!-- হেডার -->
         <div class="header">
-            <h1>✨ XR7 PANEL </h1>
-            <p style="font-size: 20px; margin-bottom: 15px;">কয়েন সেল করুন এবং আয় করুন</p>
+            <h1>XR7 Task</h1>
+            <p style="font-size: 20px; margin-bottom: 15px;">কয়েন সেল করুন</p>
             <div class="status">সেলিং চালু আছে</div>
         </div>
 
-        <!-- লোডিং -->
         <div id="loading" class="loading">
-            <p> লোড হচ্ছে...</p>
+            <p>⏳ লোড হচ্ছে...</p>
         </div>
 
-        <!-- এরর -->
         <div id="error" class="error hidden"></div>
 
-        <!-- মেইন কন্টেন্ট -->
+        <div id="debugInfo" class="debug-info hidden"></div>
+
         <div id="content" class="hidden">
             <form id="sellForm">
                 <div class="form-group">
-                    <label>🪙 কোন কয়েন বিক্রি করবেন?</label>
+                    <label>কোন কয়েন বিক্রি করবেন</label>
                     <select id="coinSelect" required>
-                        <option value="">কয়েন নির্বাচন করুন</option>
+                        <option value="">কয়েন লিস্ট লোড হচ্ছে...</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>💰 পরিমাণ (কয়েন সংখ্যা)</label>
+                    <label>পরিমাণ (কয়েন সংখ্যা)</label>
                     <input type="number" id="amount" placeholder="উদাহরণ: 1000" min="100" step="100" required>
                 </div>
 
                 <div class="form-group">
-                    <label>💳 পেমেন্ট মেথড নির্বাচন করুন</label>
+                    <label>পেমেন্ট মেথড</label>
                     <div class="payment-methods">
-                        <button type="button" class="payment-btn" data-method="বিকাশ">বিকাশ</button>
-                        <button type="button" class="payment-btn" data-method="নগদ">নগদ</button>
-                        <button type="button" class="payment-btn" data-method="রকেট">রকেট</button>
-                        <button type="button" class="payment-btn" data-method="ব্যাংক">ব্যাংক</button>
+                        <button type="button" class="payment-btn" data-method="Bikas">Bikas</button>
+                        <button type="button" class="payment-btn" data-method="Nogod">Nogod</button>
+                        <button type="button" class="payment-btn" data-method="Rocket">Rocket</button>
+                        <button type="button" class="payment-btn" data-method="Bank">Bank</button>
                     </div>
                     <input type="hidden" id="paymentMethod" required>
                 </div>
 
                 <div class="form-group">
-                    <label> অ্যাকাউন্ট নাম্বার</label>
-                    <input type="text" id="accountNumber" placeholder="আপনার অ্যাকাউন্ট নাম্বার লিখুন" required>
+                    <label>অ্যাকাউন্ট নাম্বার</label>
+                    <input type="text" id="accountNumber" placeholder="বিকাশ/নগদ/রকেট/ব্যাংক নাম্বার" required>
                 </div>
 
                 <div class="form-group">
-                    <label>️ কুপন / কোড (চ্ছিক)</label>
-                    <input type="text" id="couponCode" placeholder="কুপন কোড থাকলে লিখুন">
+                    <label>কুপন / কোড</label>
+                    <input type="text" id="couponCode" placeholder="ঐচ্ছিক">
                 </div>
 
                 <div class="info-box">
-                    <div>💵 রেট: <span id="rateDisplay" class="rate-info">—</span></div>
-                    <small style="opacity: 0.9;">প্রতি ১,০০০ কয়েন</small>
+                    <div>রেট: <span id="rateDisplay" class="rate-info">—</span></div>
                 </div>
 
                 <div class="total-box">
-                    <div class="total-label"> মোট পাবেন</div>
-                    <div class="total-amount">৳ <span id="totalAmount">0.00</span></div>
-                    <div class="coin-amount"><span id="coinAmount">0</span> কয়েন</div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>পরিমাণ</span>
+                        <span><span id="coinAmount">0</span> কয়েন</span>
+                    </div>
+                    <div style="font-size: 24px; font-weight: bold;">
+                        মোট পাবেন <span style="float: right;"><span id="totalAmount">0.00</span> টাকা</span>
+                    </div>
                 </div>
 
-                <button type="submit" class="submit-btn">
-                    ✅ সেল রিকোয়েস্ট পাঠান
-                </button>
+                <button type="submit" class="submit-btn">সেল রিকোয়েস্ট পাঠান ✓</button>
             </form>
         </div>
     </div>
@@ -344,10 +206,10 @@
     <script>
         // Firebase কনফিগারেশন
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "xr7-task.firebaseapp.com",
-            projectId: "xr7-task",
-            storageBucket: "xr7-task.appspot.com",
+            apiKey: "AIzaSyCz_5RfE2mMfW8YqJ3K9pN7xL4vT6sU8wQ",
+            authDomain: "social-media-task-88c67.firebaseapp.com",
+            projectId: "social-media-task-88c67",
+            storageBucket: "social-media-task-88c67.appspot.com",
             messagingSenderId: "123456789",
             appId: "1:123456789:web:abc123"
         };
@@ -357,55 +219,17 @@
         const db = firebase.firestore();
 
         let coinsData = {};
+        let selectedCoinRate = 0;
         let selectedPaymentMethod = '';
 
         // পেজ লোড হলে
         window.addEventListener('DOMContentLoaded', async () => {
             try {
-                await Promise.all([
-                    loadNotifications(),
-                    loadSettings()
-                ]);
+                await loadSettings();
             } catch (error) {
                 showError("ডেটা লোড করতে সমস্যা: " + error.message);
             }
         });
-
-        // নোটিশ লোড করা
-        async function loadNotifications() {
-            try {
-                const notificationsRef = db.collection('xr7_notifications')
-                    .where('active', '==', true)
-                    .orderBy('createdAt', 'desc')
-                    .limit(1);
-                
-                const snapshot = await notificationsRef.get();
-                
-                if (!snapshot.empty) {
-                    const notification = snapshot.docs[0].data();
-                    showNotification(notification);
-                }
-            } catch (error) {
-                console.error('Notification Load Error:', error);
-            }
-        }
-
-        // নোটিশ দেখানো
-        function showNotification(notification) {
-            const notificationBox = document.getElementById('notificationBox');
-            const notificationText = document.getElementById('notificationText');
-            const notificationTime = document.getElementById('notificationTime');
-            
-            notificationText.textContent = notification.message || '';
-            
-            if (notification.createdAt) {
-                const date = notification.createdAt.toDate ? 
-                    notification.createdAt.toDate() : new Date(notification.createdAt);
-                notificationTime.textContent = '📅 ' + date.toLocaleString('bn-BD');
-            }
-            
-            notificationBox.classList.add('show');
-        }
 
         // সেটিংস লোড করা
         async function loadSettings() {
@@ -425,6 +249,9 @@
 
                 coinsData = data.coins || {};
                 
+                // ডিবাগ ইনফো আপডেট (Project ID ছাড়া)
+                updateDebugInfo(data);
+                
                 // কয়েন ড্রপডাউন পপুলেট
                 const select = document.getElementById('coinSelect');
                 select.innerHTML = '<option value="">কয়েন নির্বাচন করুন</option>';
@@ -434,7 +261,7 @@
                     if (coinData.active) {
                         const option = document.createElement('option');
                         option.value = coinName;
-                        option.textContent = `${coinName} - ৳${coinData.rate} (প্রতি ১,০০০)`;
+                        option.textContent = `${coinName} - ${coinData.rate} টাকা (প্রতি ১০০)`;
                         option.dataset.rate = coinData.rate;
                         select.appendChild(option);
                         activeCoins++;
@@ -469,6 +296,25 @@
             }
         }
 
+        // ডিবাগ ইনফো আপডেট (Project ID ছাড়া)
+        function updateDebugInfo(data) {
+            const coins = data.coins || {};
+            let activeCoinsList = [];
+            for (const [name, coin] of Object.entries(coins)) {
+                if (coin.active) {
+                    activeCoinsList.push(`${name}: ${coin.rate} টাকা`);
+                }
+            }
+            
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.innerHTML = `
+                📌 স্ট্যাটাস: ${data.selling_status || 'closed'}<br>
+                📌 কয়েন সংখ্যা: ${Object.keys(coins).length}<br>
+                ✅ সক্রিয় কয়েন: ${activeCoinsList.join(' • ') || 'নেই'}
+            `;
+            debugDiv.classList.remove('hidden');
+        }
+
         // টোটাল আপডেট
         function updateTotal() {
             const select = document.getElementById('coinSelect');
@@ -478,8 +324,8 @@
                 const rate = parseFloat(select.options[select.selectedIndex].dataset.rate);
                 const total = (amount / 1000) * rate;
                 document.getElementById('totalAmount').textContent = total.toFixed(2);
-                document.getElementById('coinAmount').textContent = parseInt(amount).toLocaleString('bn-BD');
-                document.getElementById('rateDisplay').textContent = `৳${rate}`;
+                document.getElementById('coinAmount').textContent = parseInt(amount).toLocaleString();
+                document.getElementById('rateDisplay').textContent = `${rate} টাকা / ,০০০ কয়েন`;
             }
         }
 
