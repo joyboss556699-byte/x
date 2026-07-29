@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>XR7 Coin Sell</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
   :root{
     --bg: #0e1116;
@@ -75,7 +77,7 @@
     display:flex;
     flex-direction:column;
     gap:10px;
-    margin-bottom: 22px;
+    margin-bottom: 14px;
   }
   .coin-card{
     background: var(--panel);
@@ -122,6 +124,24 @@
     transform: rotate(45deg);
   }
 
+  .note-box{
+    background: rgba(240,180,41,.08);
+    border: 1px solid var(--gold-dim);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--gold);
+    margin: 0 0 18px;
+    display:none;
+    line-height:1.5;
+  }
+
+  .empty-note{
+    color: var(--muted);
+    font-size: 13px;
+    padding: 10px 2px;
+  }
+
   input[type="number"], input[type="text"], select{
     width:100%;
     background: var(--panel);
@@ -136,6 +156,7 @@
     border-color: var(--gold);
   }
   input::placeholder{ color:#556072; }
+  input:disabled{ opacity:.5; }
 
   .field{ margin-bottom: 18px; }
 
@@ -233,13 +254,17 @@
 <div class="topbar">
   <span class="eyebrow">XR7 Panel</span>
   <h1>কয়েন সেল করুন</h1>
-  <div class="status-pill"><span class="dot"></span><span id="statusText">সেলিং চালু আছে</span></div>
+  <div class="status-pill"><span class="dot" id="statusDot"></span><span id="statusText">লোড হচ্ছে...</span></div>
 </div>
 
 <div id="formScreen" class="screen visible">
   <div class="section">
     <span class="label">কোন কয়েন বিক্রি করবেন</span>
-    <div class="coin-list" id="coinList"></div>
+    <div class="coin-list" id="coinList">
+      <div class="empty-note">কয়েন লিস্ট লোড হচ্ছে...</div>
+    </div>
+
+    <div class="note-box" id="noteBox"></div>
 
     <div class="field">
       <span class="label">পরিমাণ (কয়েন সংখ্যা)</span>
@@ -250,6 +275,12 @@
     <div class="field">
       <span class="label">পেমেন্ট মেথড</span>
       <div class="method-grid" id="methodGrid"></div>
+    </div>
+
+    <div class="field" id="couponField" style="display:none;">
+      <span class="label">কুপন / কোড</span>
+      <input type="text" id="couponInput" placeholder="আপনার কুপন বা কোড লিখুন">
+      <div class="error-text" id="couponError">কুপন/কোড দিন</div>
     </div>
 
     <div class="field">
@@ -271,8 +302,8 @@
 <div id="successScreen" class="screen">
   <div class="success-wrap">
     <div class="success-icon">✓</div>
-    <h2>রিকোয়েস্ট পাঠানো হয়েছে</h2>
-    <p>আপনার কয়েন সেল রিকোয়েস্ট বটে পৌঁছে গেছে।<br>অ্যাডমিন যাচাই করার পর টাকা পাঠানো হবে।<br>এই উইন্ডো বন্ধ করে বটে ফিরে যান।</p>
+    <h2 id="successTitle">রিকোয়েস্ট পাঠানো হয়েছে</h2>
+    <p id="successText">আপনার কয়েন সেল রিকোয়েস্ট বটে পৌঁছে গেছে।<br>অ্যাডমিন যাচাই করার পর টাকা পাঠানো হবে।<br>এই উইন্ডো বন্ধ করে বটে ফিরে যান।</p>
   </div>
 </div>
 
@@ -281,111 +312,233 @@
   tg.ready();
   tg.expand();
 
-  // ডিফল্ট কয়েন লিস্ট — বট-এর settings-এর সাথে মিলিয়ে রাখা হয়েছে।
-  // চূড়ান্ত রেট ও মূল্য বট নিজে যাচাই করে নেবে, এখানে শুধু আনুমানিক হিসাব দেখানো হচ্ছে।
-  const COINS = [
-    { name: "Niva Coin", rate: 5.0 },
-    { name: "NS Coin", rate: 12.5 },
-    { name: "TOP Follow Coin", rate: 4.3 }
-  ];
-  const PAYMENT_METHODS = ["বিকাশ", "নগদ", "রকেট", "ব্যাংক"];
+  // ==================== Firebase কনফিগ ====================
+  // 🔧 এখানে নিজের Firebase প্রজেক্টের ওয়েব কনফিগ বসান।
+  // পাবেন: Firebase Console → Project settings (⚙️ আইকন) → General ট্যাব →
+  // "Your apps" সেকশনে Web app (</>) → SDK setup and configuration → Config
+  // এটা বটের service-account key না — এটা পাবলিক ওয়েব কনফিগ, ব্রাউজারে থাকা নিরাপদ।
+  const firebaseConfig = {
+    apiKey: "AIzaSyA7iEsZI2wlTd-a_34AbJswK602Cjkd7i",
+    authDomain: "xr7-task.firebaseapp.com",
+    projectId: "xr7-task",
+    storageBucket: "xr7-task.firebasestorage.app",
+    messagingSenderId: "934803666532",
+    appId: "1:934803666532:web:c8699df5227cdf4719"
+  };
 
-  let selectedCoin = null;
+  if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+    document.body.innerHTML =
+      '<div style="padding:50px 24px; text-align:center; color:#e5534b; font-family:sans-serif; line-height:1.7;">' +
+      '⚠️ Firebase কনফিগ সেট করা হয়নি।<br>index.html ফাইলের firebaseConfig অবজেক্টটা পূরণ করুন,<br>' +
+      'তারপর Firestore Rules-এ xr7_settings রিড-অ্যাক্সেস খুলে দিন।</div>';
+    throw new Error('Firebase config not set');
+  }
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // ==================== স্টেট ====================
+  let COINS = {};
+  let PAYMENT_METHODS = [];
+  let sellingStatus = 'closed';
+  let selectedCoinName = null;
   let selectedMethod = null;
 
   const coinList = document.getElementById('coinList');
-  COINS.forEach((coin, i) => {
-    const card = document.createElement('div');
-    card.className = 'coin-card' + (i === 0 ? ' active' : '');
-    card.innerHTML = `
-      <div>
-        <div class="name">${coin.name}</div>
-        <div class="rate">প্রতি ১,০০০ কয়েনে ${coin.rate} টাকা</div>
-      </div>
-      <div class="check"></div>
-    `;
-    card.addEventListener('click', () => {
-      document.querySelectorAll('.coin-card').forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-      selectedCoin = coin;
-      updateSummary();
-    });
-    coinList.appendChild(card);
-  });
-  selectedCoin = COINS[0];
-
   const methodGrid = document.getElementById('methodGrid');
-  PAYMENT_METHODS.forEach((method, i) => {
-    const chip = document.createElement('div');
-    chip.className = 'method-chip' + (i === 0 ? ' active' : '');
-    chip.textContent = method;
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('.method-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      selectedMethod = method;
-      validateForm();
-    });
-    methodGrid.appendChild(chip);
-  });
-  selectedMethod = PAYMENT_METHODS[0];
-
   const amountField = document.getElementById('amountInput');
   const accountField = document.getElementById('accountInput');
+  const couponField = document.getElementById('couponField');
+  const couponInput = document.getElementById('couponInput');
   const submitBtn = document.getElementById('submitBtn');
+  const statusText = document.getElementById('statusText');
+  const statusDot = document.getElementById('statusDot');
+  const noteBox = document.getElementById('noteBox');
+
+  // ==================== লাইভ সেটিংস (রিয়েল-টাইম) ====================
+  // অ্যাডমিন প্যানেল থেকে কয়েন অন/অফ, রেট, নোট, কুপন-কোড রিকোয়ারমেন্ট,
+  // পেমেন্ট মেথড বা সেলিং স্ট্যাটাস বদলালেই এখানে সাথে সাথে রিফ্লেক্ট হবে —
+  // ফাইল আর এডিট করা লাগবে না, নতুন কয়েন যোগ করলেও এখানে নিজে থেকেই আসবে।
+  db.collection('xr7_settings').doc('main').onSnapshot((doc) => {
+    if (!doc.exists) {
+      statusText.textContent = 'সেটিংস পাওয়া যায়নি';
+      return;
+    }
+    const data = doc.data();
+    COINS = data.coins || {};
+    PAYMENT_METHODS = data.payment_methods || [];
+    sellingStatus = data.selling_status || 'closed';
+    renderStatus();
+    renderCoins();
+    renderMethods();
+  }, (err) => {
+    console.error('Settings fetch error:', err);
+    statusText.textContent = 'ডেটা লোড করতে সমস্যা হচ্ছে';
+    statusDot.style.background = 'var(--danger)';
+  });
+
+  function renderStatus(){
+    if (sellingStatus === 'open') {
+      statusText.textContent = 'সেলিং চালু আছে';
+      statusDot.style.background = 'var(--ok)';
+    } else {
+      statusText.textContent = 'সেলিং বর্তমানে বন্ধ';
+      statusDot.style.background = 'var(--danger)';
+    }
+    validateForm();
+  }
+
+  function renderCoins(){
+    coinList.innerHTML = '';
+    // 🔧 বাগ ফিক্স: অ্যাডমিন যে কয়েন OFF করে রাখবে সেটা এখানে
+    // একদমই দেখানো হয় না, ON করলে আবার লিস্টে ফিরে আসবে।
+    const activeCoins = Object.entries(COINS).filter(([_, c]) => c && c.active !== false);
+
+    if (activeCoins.length === 0) {
+      coinList.innerHTML = '<div class="empty-note">এই মুহূর্তে কোনো কয়েন সেলের জন্য উপলব্ধ নেই।</div>';
+      selectedCoinName = null;
+      updateSummary();
+      return;
+    }
+
+    if (!selectedCoinName || !COINS[selectedCoinName] || COINS[selectedCoinName].active === false) {
+      selectedCoinName = activeCoins[0][0];
+    }
+
+    activeCoins.forEach(([name, coin]) => {
+      const card = document.createElement('div');
+      card.className = 'coin-card' + (name === selectedCoinName ? ' active' : '');
+      card.innerHTML =
+        '<div>' +
+          '<div class="name">' + name + '</div>' +
+          '<div class="rate">প্রতি ১,০০০ কয়েনে ' + (coin.rate ?? 0) + ' টাকা</div>' +
+        '</div>' +
+        '<div class="check"></div>';
+      card.addEventListener('click', () => {
+        selectedCoinName = name;
+        renderCoins();
+        updateSummary();
+      });
+      coinList.appendChild(card);
+    });
+
+    updateSummary();
+  }
+
+  function renderMethods(){
+    const methods = PAYMENT_METHODS.length ? PAYMENT_METHODS : ["বিকাশ", "নগদ", "রকেট", "ব্যাংক"];
+    if (!selectedMethod || !methods.includes(selectedMethod)) {
+      selectedMethod = methods[0];
+    }
+    methodGrid.innerHTML = '';
+    methods.forEach((method) => {
+      const chip = document.createElement('div');
+      chip.className = 'method-chip' + (method === selectedMethod ? ' active' : '');
+      chip.textContent = method;
+      chip.addEventListener('click', () => {
+        selectedMethod = method;
+        renderMethods();
+        validateForm();
+      });
+      methodGrid.appendChild(chip);
+    });
+  }
+
+  function currentCoin(){
+    return selectedCoinName ? COINS[selectedCoinName] : null;
+  }
 
   function updateSummary(){
+    const coin = currentCoin();
     const amount = parseInt(amountField.value || '0', 10);
-    const rate = selectedCoin ? selectedCoin.rate : 0;
+    const rate = coin ? (coin.rate || 0) : 0;
     const total = (amount / 1000) * rate;
 
-    document.getElementById('rateDisplay').textContent = selectedCoin
-      ? `${selectedCoin.rate} টাকা / ১,০০০ কয়েন` : '—';
-    document.getElementById('amountDisplay').textContent = `${amount.toLocaleString('en-US')} কয়েন`;
-    document.getElementById('totalDisplay').textContent = `${total.toFixed(2)} টাকা`;
+    document.getElementById('rateDisplay').textContent = coin ? (rate + ' টাকা / ১,০০০ কয়েন') : '—';
+    document.getElementById('amountDisplay').textContent = amount.toLocaleString('en-US') + ' কয়েন';
+    document.getElementById('totalDisplay').textContent = total.toFixed(2) + ' টাকা';
+
+    // অ্যাডমিনের সেট করা নোট (যেমন: কোন Instagram username-এ পাঠাতে হবে)
+    const note = coin && coin.admin_note ? String(coin.admin_note).trim() : '';
+    if (note) {
+      noteBox.textContent = '📌 ' + note;
+      noteBox.style.display = 'block';
+    } else {
+      noteBox.style.display = 'none';
+    }
+
+    // কুপন-কোড ভিত্তিক কয়েন হলে আলাদা ফিল্ড দেখাও (স্ক্রিনশট লাগবে না, তাই
+    // এখানেই ফাইনাল সাবমিট হয়ে যাবে — চ্যাটে আর কিছু আপলোড করা লাগবে না)
+    if (coin && coin.requires_coupon_code) {
+      couponField.style.display = 'block';
+    } else {
+      couponField.style.display = 'none';
+      couponInput.value = '';
+    }
 
     validateForm();
   }
 
   function validateForm(){
+    const coin = currentCoin();
     const amount = parseInt(amountField.value || '0', 10);
     const account = accountField.value.trim();
 
     const amountOk = amount > 0;
     const accountOk = account.length >= 6;
+    const couponNeeded = !!(coin && coin.requires_coupon_code);
+    const couponOk = !couponNeeded || couponInput.value.trim().length > 0;
 
     document.getElementById('amountError').style.display = (amountField.value && !amountOk) ? 'block' : 'none';
     document.getElementById('accountError').style.display = (accountField.value && !accountOk) ? 'block' : 'none';
+    document.getElementById('couponError').style.display = (couponNeeded && couponInput.value && !couponOk) ? 'block' : 'none';
 
-    const formValid = amountOk && accountOk && selectedCoin && selectedMethod;
+    const formValid = sellingStatus === 'open' && !!coin && amountOk && accountOk && !!selectedMethod && couponOk;
     submitBtn.disabled = !formValid;
   }
 
   amountField.addEventListener('input', updateSummary);
   accountField.addEventListener('input', validateForm);
+  couponInput.addEventListener('input', validateForm);
 
   submitBtn.addEventListener('click', () => {
+    const coin = currentCoin();
+    if (!coin || !selectedCoinName) return;
+
     const amount = parseInt(amountField.value || '0', 10);
     const account = accountField.value.trim();
-    const total = (amount / 1000) * selectedCoin.rate;
+    const total = (amount / 1000) * (coin.rate || 0);
 
     const payload = {
       action: "xr7_sell_request",
-      coin_name: selectedCoin.name,
+      coin_name: selectedCoinName,
       amount: amount,
       payment_method: selectedMethod,
       account_number: account,
       estimated_total: Number(total.toFixed(2))
     };
 
+    if (coin.requires_coupon_code) {
+      payload.coupon_code = couponInput.value.trim();
+    }
+
     tg.sendData(JSON.stringify(payload));
+
+    // কুপন-কোড কয়েনের জন্য বট সাথে সাথেই সাবমিশন ফাইনাল করে দেয় (স্ক্রিনশট লাগে না);
+    // স্ক্রিনশট-ভিত্তিক কয়েনের জন্য বট চ্যাটে ফিরে স্ক্রিনশট চাইবে।
+    if (coin.requires_coupon_code) {
+      document.getElementById('successText').innerHTML =
+        'আপনার কয়েন সেল রিকোয়েস্ট বটে পৌঁছে গেছে এবং সাবমিট হয়ে গেছে।<br>অ্যাডমিন যাচাই করার পর টাকা পাঠানো হবে।<br>এই উইন্ডো বন্ধ করে বটে ফিরে যান।';
+    } else {
+      document.getElementById('successText').innerHTML =
+        'আপনার কয়েন সেল রিকোয়েস্ট বটে পৌঁছে গেছে।<br>এখন বটে ফিরে ট্রান্সফারের স্ক্রিনশট আপলোড করুন।<br>স্ক্রিনশট দেওয়ার পরই সাবমিশন সম্পূর্ণ হবে।';
+    }
 
     document.getElementById('formScreen').classList.remove('visible');
     document.getElementById('successScreen').classList.add('visible');
 
     setTimeout(() => tg.close(), 2200);
   });
-
-  updateSummary();
 </script>
 </body>
 </html>
