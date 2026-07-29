@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>XR7 Coin Sell</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -339,14 +339,14 @@
     </div>
 
     <script>
-        // Firebase Configuration
+        // ✅ সঠিক Firebase Config
         const firebaseConfig = {
-            apiKey: "AIzaSyBvZ8H5K9qJxYqKxYqKxYqKxYqKxYqKxYq",
-            authDomain: "your-project.firebaseapp.com",
-            projectId: "your-project",
-            storageBucket: "your-project.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abc123"
+            apiKey: "AIzaSyA7iEsZI2wlTd-a_34AbJswK602Cjkd7i",
+            authDomain: "xr7-task.firebaseapp.com",
+            projectId: "xr7-task",
+            storageBucket: "xr7-task.firebasestorage.app",
+            messagingSenderId: "934803666532",
+            appId: "1:934803666532:web:c8699df5227cdf4719"
         };
 
         // Initialize Firebase
@@ -545,7 +545,7 @@
 
             } catch (error) {
                 console.error('Submit error:', error);
-                showMessage('error', ' সমস্যা হয়েছে! আবার চেষ্টা করুন।');
+                showMessage('error', '⚠️ সমস্যা হয়েছে! আবার চেষ্টা করুন।');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'সেল রিকোয়েস্ট পাঠান ✓';
             }
