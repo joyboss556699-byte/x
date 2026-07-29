@@ -10,80 +10,82 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #0a0a1a;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #fff; 
-            padding: 15px;
+            padding: 20px;
             min-height: 100vh;
         }
         .container { max-width: 600px; margin: 0 auto; }
         
         /* নোটিশ বক্স */
         .notification-box {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 5px 20px rgba(238, 90, 36, 0.4);
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             animation: slideDown 0.5s ease;
-            border: 1px solid rgba(255,255,255,0.2);
+            border-left: 5px solid #fff;
             display: none;
         }
         .notification-box.show { display: block; }
-        .notification-box .notif-header {
+        .notification-box h3 { 
+            font-size: 16px; 
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 8px;
         }
-        .notification-box .notif-header h3 { 
-            font-size: 15px; 
-            color: #fff;
-        }
-        .notification-box p { 
-            font-size: 13px; 
-            line-height: 1.5; 
-            color: rgba(255,255,255,0.95);
-        }
+        .notification-box p { font-size: 14px; line-height: 1.6; }
         .notification-box .time { 
-            font-size: 11px; 
-            opacity: 0.8; 
+            font-size: 12px; 
+            opacity: 0.9; 
             margin-top: 8px;
             display: block;
-            color: rgba(255,255,255,0.8);
         }
         
         /* হেডার */
         .header { 
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            padding: 25px 20px; 
-            border-radius: 16px; 
+            background: rgba(255,255,255,0.15); 
+            padding: 30px 20px; 
+            border-radius: 20px; 
             text-align: center;
-            margin-bottom: 15px;
-            border: 1px solid rgba(255,215,0,0.3);
-            box-shadow: 0 5px 25px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.2);
         }
         .header h1 { 
             color: #FFD700; 
-            font-size: 28px; 
-            margin-bottom: 8px;
-            text-shadow: 0 0 10px rgba(255,215,0,0.5);
+            font-size: 32px; 
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: glow 2s ease-in-out infinite;
         }
-        .header p { color: #aaa; font-size: 14px; margin-bottom: 15px; }
+        @keyframes glow {
+            0%, 100% { text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+            50% { text-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700; }
+        }
         .status { 
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 18px; 
-            background: linear-gradient(135deg, #00b894, #00cec9);
-            border-radius: 20px; 
-            font-size: 13px;
+            padding: 10px 20px; 
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            border-radius: 25px; 
+            font-size: 14px;
             font-weight: bold;
-            box-shadow: 0 3px 15px rgba(0, 184, 148, 0.4);
+            box-shadow: 0 4px 15px rgba(56, 239, 125, 0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
         .status::before { 
             content: "●"; 
             color: #fff; 
-            font-size: 10px;
+            font-size: 12px;
             animation: blink 1.5s ease-in-out infinite;
         }
         @keyframes blink {
@@ -93,182 +95,123 @@
         
         /* ফর্ম গ্রুপ */
         .form-group { 
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            padding: 20px; 
-            border-radius: 14px; 
-            margin-bottom: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 3px 15px rgba(0,0,0,0.2);
+            background: rgba(255,255,255,0.1); 
+            padding: 25px; 
+            border-radius: 15px; 
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
         }
-        .form-group label { 
+        label { 
             display: block; 
-            margin-bottom: 10px; 
+            margin-bottom: 12px; 
             font-weight: 600; 
-            color: #ddd;
-            font-size: 14px;
-        }
-        
-        /* সিলেক্ট এবং ইনপুট */
-        select, input[type="text"], input[type="number"] { 
-            width: 100%; 
-            padding: 14px 16px; 
-            border: 2px solid rgba(255,255,255,0.15); 
-            border-radius: 10px; 
-            background: rgba(255,255,255,0.08); 
-            color: #fff; 
+            color: #fff;
             font-size: 15px;
+        }
+        select, input { 
+            width: 100%; 
+            padding: 15px; 
+            border: 2px solid rgba(255,255,255,0.3); 
+            border-radius: 12px; 
+            background: rgba(255,255,255,0.15); 
+            color: #fff; 
+            font-size: 16px;
             transition: all 0.3s;
         }
         select:focus, input:focus { 
             outline: none;
             border-color: #FFD700;
-            background: rgba(255,255,255,0.12);
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+            background: rgba(255,255,255,0.25);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
         }
         select option { 
-            background: #1a1a2e; 
+            background: #2d2d44; 
             color: #fff; 
         }
-        input::placeholder { color: #666; }
         
-        /* পেমেন্ট বাটন - সুন্দর রঙিন */
+        /* পেমেন্ট বাটন */
         .payment-methods { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
-            gap: 10px; 
-            margin: 10px 0;
+            gap: 12px; 
+            margin: 15px 0;
         }
         .payment-btn { 
-            padding: 14px; 
-            border: 2px solid rgba(255,255,255,0.15); 
+            padding: 15px; 
+            border: 2px solid rgba(255,255,255,0.3); 
             border-radius: 12px; 
-            background: rgba(255,255,255,0.08); 
+            background: rgba(255,255,255,0.1); 
             color: #fff; 
             cursor: pointer;
             transition: all 0.3s;
-            font-weight: 700;
+            font-weight: 600;
             font-size: 14px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .payment-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            opacity: 0;
-            transition: opacity 0.3s;
         }
         .payment-btn:hover { 
+            background: rgba(255,255,255,0.2);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         .payment-btn.active { 
+            border-color: #FFD700; 
+            background: linear-gradient(135deg, #FFD700, #FFA500); 
+            color: #000;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
             transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-        }
-        
-        /* বিকাশ - গোলাপি */
-        .payment-btn[data-method="বিকাশ"] {
-            border-color: #e91e63;
-            background: linear-gradient(135deg, rgba(233,30,99,0.2), rgba(233,30,99,0.1));
-            color: #ff6090;
-        }
-        .payment-btn[data-method="বিকাশ"].active {
-            background: linear-gradient(135deg, #e91e63, #c2185b);
-            color: #fff;
-            box-shadow: 0 8px 25px rgba(233, 30, 99, 0.5);
-        }
-        
-        /* নগদ - কমলা */
-        .payment-btn[data-method="নগদ"] {
-            border-color: #ff9800;
-            background: linear-gradient(135deg, rgba(255,152,0,0.2), rgba(255,152,0,0.1));
-            color: #ffb74d;
-        }
-        .payment-btn[data-method="নগদ"].active {
-            background: linear-gradient(135deg, #ff9800, #f57c00);
-            color: #fff;
-            box-shadow: 0 8px 25px rgba(255, 152, 0, 0.5);
-        }
-        
-        /* রকেট - বেগুনি */
-        .payment-btn[data-method="রকেট"] {
-            border-color: #9c27b0;
-            background: linear-gradient(135deg, rgba(156,39,176,0.2), rgba(156,39,176,0.1));
-            color: #ce93d8;
-        }
-        .payment-btn[data-method="রকেট"].active {
-            background: linear-gradient(135deg, #9c27b0, #7b1fa2);
-            color: #fff;
-            box-shadow: 0 8px 25px rgba(156, 39, 176, 0.5);
-        }
-        
-        /* ব্যাংক - নীল */
-        .payment-btn[data-method="ব্যাংক"] {
-            border-color: #2196f3;
-            background: linear-gradient(135deg, rgba(33,150,243,0.2), rgba(33,150,243,0.1));
-            color: #64b5f6;
-        }
-        .payment-btn[data-method="ব্যাংক"].active {
-            background: linear-gradient(135deg, #2196f3, #1976d2);
-            color: #fff;
-            box-shadow: 0 8px 25px rgba(33, 150, 243, 0.5);
         }
         
         /* ইনফো বক্স */
         .info-box { 
-            background: linear-gradient(135deg, rgba(255,193,7,0.15), rgba(255,193,7,0.05)); 
-            border-left: 4px solid #FFC107; 
-            padding: 14px; 
-            border-radius: 10px; 
-            margin: 15px 0;
+            background: linear-gradient(135deg, rgba(255,193,7,0.2), rgba(255,193,7,0.1)); 
+            border-left: 5px solid #FFC107; 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin: 20px 0;
         }
-        .rate-info { color: #FFD700; font-size: 22px; font-weight: bold; }
+        .rate-info { color: #FFD700; font-size: 24px; font-weight: bold; }
         
         /* টোটাল বক্স */
         .total-box { 
-            background: linear-gradient(135deg, #00b894, #00cec9); 
-            padding: 20px; 
-            border-radius: 14px; 
+            background: linear-gradient(135deg, #11998e, #38ef7d); 
+            padding: 25px; 
+            border-radius: 15px; 
             text-align: center;
-            margin: 20px 0;
-            box-shadow: 0 5px 25px rgba(0, 184, 148, 0.3);
+            margin: 25px 0;
+            box-shadow: 0 10px 30px rgba(56, 239, 125, 0.3);
+            border: 2px solid rgba(255,255,255,0.2);
         }
-        .total-label { font-size: 14px; margin-bottom: 8px; opacity: 0.9; }
+        .total-label { font-size: 16px; margin-bottom: 10px; opacity: 0.95; }
         .total-amount { 
-            font-size: 36px; 
+            font-size: 42px; 
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
         .coin-amount {
-            font-size: 16px;
-            margin-top: 8px;
+            font-size: 18px;
+            margin-top: 10px;
             opacity: 0.9;
         }
         
         /* সাবমিট বাটন */
         .submit-btn { 
             width: 100%; 
-            padding: 16px; 
-            background: linear-gradient(135deg, #6c5ce7, #a29bfe); 
+            padding: 18px; 
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); 
             border: none; 
-            border-radius: 12px; 
+            border-radius: 15px; 
             color: #fff; 
-            font-size: 18px; 
+            font-size: 20px; 
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 5px 20px rgba(108, 92, 231, 0.4);
+            box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
             text-transform: uppercase;
             letter-spacing: 1px;
         }
         .submit-btn:hover { 
             transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(108, 92, 231, 0.6);
+            box-shadow: 0 12px 35px rgba(245, 87, 108, 0.5);
         }
         .submit-btn:active { transform: translateY(-1px); }
         .submit-btn:disabled { 
@@ -281,11 +224,11 @@
         /* লোডিং */
         .loading { 
             text-align: center; 
-            padding: 50px 20px; 
-            color: #FFD700;
+            padding: 60px 20px; 
+            color: #fff;
         }
         .loading p { 
-            font-size: 16px;
+            font-size: 18px;
             animation: fadeInOut 1.5s ease-in-out infinite;
         }
         @keyframes fadeInOut {
@@ -295,18 +238,19 @@
         
         /* এরর */
         .error { 
-            background: linear-gradient(135deg, rgba(231,76,60,0.2), rgba(231,76,60,0.1)); 
-            border-left: 4px solid #e74c3c; 
-            padding: 15px; 
-            border-radius: 10px; 
-            margin: 15px 0;
-            color: #ff6b6b;
+            background: linear-gradient(135deg, rgba(244,67,54,0.3), rgba(244,67,54,0.1)); 
+            border-left: 5px solid #F44336; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin: 20px 0;
+            color: #fff;
+            box-shadow: 0 5px 20px rgba(244, 67, 54, 0.3);
         }
         
         /* হিডেন */
         .hidden { display: none; }
         
-        /* অ্যানিমেশন */
+        /* স্লাইড ডাউন অ্যানিমেশন */
         @keyframes slideDown {
             from {
                 opacity: 0;
@@ -323,23 +267,21 @@
     <div class="container">
         <!-- নোটিশ বক্স -->
         <div id="notificationBox" class="notification-box">
-            <div class="notif-header">
-                <h3>📢 গুরুত্বপূর্ণ নোটিশ</h3>
-            </div>
+            <h3>📢 গুরুত্বপূর্ণ নোটিশ</h3>
             <p id="notificationText"></p>
             <span class="time" id="notificationTime"></span>
         </div>
 
         <!-- হেডার -->
         <div class="header">
-            <h1>✨ XR7 PANEL</h1>
-            <p>কয়েন সেল করুন এবং আয় করুন</p>
+            <h1>✨ XR7 PANEL </h1>
+            <p style="font-size: 20px; margin-bottom: 15px;">কয়েন সেল করুন এবং আয় করুন</p>
             <div class="status">সেলিং চালু আছে</div>
         </div>
 
         <!-- লোডিং -->
         <div id="loading" class="loading">
-            <p>⏳ লোড হচ্ছে...</p>
+            <p> লোড হচ্ছে...</p>
         </div>
 
         <!-- এরর -->
@@ -377,17 +319,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label>🎟️ কুপন / কোড (ঐচ্ছিক)</label>
+                    <label>️ কুপন / কোড (চ্ছিক)</label>
                     <input type="text" id="couponCode" placeholder="কুপন কোড থাকলে লিখুন">
                 </div>
 
                 <div class="info-box">
                     <div>💵 রেট: <span id="rateDisplay" class="rate-info">—</span></div>
-                    <small style="opacity: 0.8; color: #aaa;">প্রতি ১,০০০ কয়েন</small>
+                    <small style="opacity: 0.9;">প্রতি ১,০০০ কয়েন</small>
                 </div>
 
                 <div class="total-box">
-                    <div class="total-label">💰 মোট পাবেন</div>
+                    <div class="total-label"> মোট পাবেন</div>
                     <div class="total-amount">৳ <span id="totalAmount">0.00</span></div>
                     <div class="coin-amount"><span id="coinAmount">0</span> কয়েন</div>
                 </div>
@@ -410,12 +352,14 @@
             appId: "1:123456789:web:abc123"
         };
 
+        // Firebase ইনিশিয়ালাইজ
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         let coinsData = {};
         let selectedPaymentMethod = '';
 
+        // পেজ লোড হলে
         window.addEventListener('DOMContentLoaded', async () => {
             try {
                 await Promise.all([
@@ -427,7 +371,7 @@
             }
         });
 
-        // নোটিশ লোড
+        // নোটিশ লোড করা
         async function loadNotifications() {
             try {
                 const notificationsRef = db.collection('xr7_notifications')
@@ -442,27 +386,28 @@
                     showNotification(notification);
                 }
             } catch (error) {
-                console.error('Notification Error:', error);
+                console.error('Notification Load Error:', error);
             }
         }
 
+        // নোটিশ দেখানো
         function showNotification(notification) {
-            const box = document.getElementById('notificationBox');
-            const text = document.getElementById('notificationText');
-            const time = document.getElementById('notificationTime');
+            const notificationBox = document.getElementById('notificationBox');
+            const notificationText = document.getElementById('notificationText');
+            const notificationTime = document.getElementById('notificationTime');
             
-            text.textContent = notification.message || '';
+            notificationText.textContent = notification.message || '';
             
             if (notification.createdAt) {
                 const date = notification.createdAt.toDate ? 
                     notification.createdAt.toDate() : new Date(notification.createdAt);
-                time.textContent = '📅 ' + date.toLocaleString('bn-BD');
+                notificationTime.textContent = '📅 ' + date.toLocaleString('bn-BD');
             }
             
-            box.classList.add('show');
+            notificationBox.classList.add('show');
         }
 
-        // সেটিংস লোড
+        // সেটিংস লোড করা
         async function loadSettings() {
             try {
                 const settingsDoc = await db.collection('xr7_settings').doc('main').get();
@@ -473,12 +418,14 @@
 
                 const data = settingsDoc.data();
                 
+                // সেলিং স্ট্যাটাস চেক
                 if (data.selling_status !== 'open') {
                     throw new Error('সেলিং বর্তমানে বন্ধ আছে');
                 }
 
                 coinsData = data.coins || {};
                 
+                // কয়েন ড্রপডাউন পপুলেট
                 const select = document.getElementById('coinSelect');
                 select.innerHTML = '<option value="">কয়েন নির্বাচন করুন</option>';
                 
@@ -498,13 +445,16 @@
                     throw new Error('কোনো সক্রিয় কয়েন নেই');
                 }
 
+                // লোডিং লুকান, কন্টেন্ট দেখান
                 document.getElementById('loading').classList.add('hidden');
                 document.getElementById('content').classList.remove('hidden');
 
+                // ইভেন্ট লিসেনার
                 select.addEventListener('change', updateTotal);
                 document.getElementById('amount').addEventListener('input', updateTotal);
                 document.getElementById('sellForm').addEventListener('submit', handleSubmit);
                 
+                // পেমেন্ট বাটন ইভেন্ট
                 document.querySelectorAll('.payment-btn').forEach(btn => {
                     btn.addEventListener('click', function() {
                         document.querySelectorAll('.payment-btn').forEach(b => b.classList.remove('active'));
@@ -519,6 +469,7 @@
             }
         }
 
+        // টোটাল আপডেট
         function updateTotal() {
             const select = document.getElementById('coinSelect');
             const amount = document.getElementById('amount').value;
@@ -532,6 +483,7 @@
             }
         }
 
+        // ফর্ম সাবমিট
         async function handleSubmit(e) {
             e.preventDefault();
             
@@ -553,6 +505,7 @@
             const rate = coinsData[coinName].rate;
             const totalPrice = (amount / 1000) * rate;
 
+            // টেলিগ্রাম WebApp-কে ডেটা পাঠান
             const data = {
                 coin_name: coinName,
                 amount: amount,
@@ -562,6 +515,7 @@
                 total_price: totalPrice
             };
 
+            // Telegram WebApp ডেটা পাঠানো
             if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.sendData(JSON.stringify(data));
                 window.Telegram.WebApp.close();
@@ -570,10 +524,11 @@
             }
         }
 
+        // এরর দেখানো
         function showError(msg) {
             document.getElementById('loading').classList.add('hidden');
             const errorDiv = document.getElementById('error');
-            errorDiv.textContent = ' ' + msg;
+            errorDiv.textContent = '❌ ' + msg;
             errorDiv.classList.remove('hidden');
         }
     </script>
