@@ -8,100 +8,227 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0e1116;
+            background: linear-gradient(135deg, #0c0c1d 0%, #1a1a2e 50%, #16213e 100%);
             color: #eef1f5;
             min-height: 100vh;
-            padding: 20px;
+            padding: 16px;
             padding-bottom: 100px;
         }
-        .container { max-width: 500px; margin: 0 auto; }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        /* ===== হেডার ===== */
         .header {
             text-align: center;
-            padding: 20px;
-            background: #161b22;
-            border-radius: 15px;
+            padding: 24px 20px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
             margin-bottom: 20px;
-            border: 1px solid #2a323d;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
-        .header h1 { color: #f0b429; font-size: 24px; }
-        .header .subtitle { color: #8b96a5; font-size: 14px; margin-top: 5px; }
+        
+        .header .icon {
+            font-size: 36px;
+            margin-bottom: 6px;
+        }
+        
+        .header h1 {
+            background: linear-gradient(135deg, #f0b429, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        
+        .header .subtitle {
+            color: #8b96a5;
+            font-size: 13px;
+            margin-top: 4px;
+            -webkit-text-fill-color: #8b96a5;
+        }
+        
         .status {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 14px;
-            background: rgba(63,185,80,0.15);
-            border-radius: 20px;
+            padding: 6px 16px;
+            background: rgba(63, 185, 80, 0.15);
+            border: 1px solid rgba(63, 185, 80, 0.25);
+            border-radius: 30px;
             font-size: 13px;
+            font-weight: 600;
             color: #3fb950;
-            margin-top: 10px;
+            margin-top: 12px;
         }
+        
         .status-dot {
             width: 8px;
             height: 8px;
             background: #3fb950;
             border-radius: 50%;
-            animation: pulse 2s infinite;
+            animation: pulse 1.8s ease-in-out infinite;
         }
-        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+        
+        /* ===== কার্ড ===== */
         .card {
-            background: #161b22;
-            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 18px;
             padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid #2a323d;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
         }
-        .form-group { margin-bottom: 18px; }
+        
+        .card:hover {
+            border-color: rgba(240, 180, 41, 0.15);
+            box-shadow: 0 6px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* ===== ফর্ম গ্রুপ ===== */
+        .form-group {
+            margin-bottom: 18px;
+        }
+        
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+        
         label {
             display: block;
             margin-bottom: 6px;
             font-size: 13px;
-            color: #8b96a5;
             font-weight: 600;
+            color: #9aa4b3;
+            letter-spacing: 0.3px;
         }
+        
+        label .label-icon {
+            margin-right: 6px;
+        }
+        
         select, input {
             width: 100%;
-            padding: 14px;
-            border: 1.5px solid #2a323d;
-            border-radius: 12px;
-            background: #0e1116;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1.5px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
             color: #eef1f5;
-            font-size: 16px;
+            font-size: 15px;
             outline: none;
+            transition: all 0.3s ease;
+            appearance: none;
+            -webkit-appearance: none;
         }
-        select:focus, input:focus { border-color: #f0b429; }
-        select option { background: #0e1116; color: #eef1f5; }
+        
+        select:focus, input:focus {
+            border-color: #f0b429;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(240, 180, 41, 0.1);
+        }
+        
+        select option {
+            background: #1a1a2e;
+            color: #eef1f5;
+        }
+        
+        input::placeholder {
+            color: #5a6577;
+        }
+        
+        /* ===== পেমেন্ট বাটন ===== */
         .payment-methods {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr 1fr;
             gap: 10px;
         }
+        
         .payment-btn {
-            padding: 14px;
-            border: 1.5px solid #2a323d;
-            border-radius: 12px;
-            background: #0e1116;
-            color: #eef1f5;
+            padding: 14px 10px;
+            border: 1.5px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.04);
+            color: #c8d0dc;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             text-align: center;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
+        
+        .payment-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+        }
+        
+        .payment-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        
         .payment-btn.active {
+            transform: translateY(-3px);
             border-color: #f0b429;
-            background: rgba(240,180,41,0.1);
+            box-shadow: 0 8px 28px rgba(240, 180, 41, 0.25);
             color: #f0b429;
+            background: rgba(240, 180, 41, 0.08);
         }
+        
+        .payment-btn.active::after {
+            opacity: 1;
+        }
+        
+        /* পেমেন্ট বাটন — রঙিন */
+        .payment-btn[data-method="বিকাশ"] { border-color: rgba(233, 30, 99, 0.3); color: #f06292; }
+        .payment-btn[data-method="বিকাশ"].active { border-color: #e91e63; background: rgba(233, 30, 99, 0.15); box-shadow: 0 8px 28px rgba(233, 30, 99, 0.3); color: #ff80ab; }
+        
+        .payment-btn[data-method="নগদ"] { border-color: rgba(255, 152, 0, 0.3); color: #ffb74d; }
+        .payment-btn[data-method="নগদ"].active { border-color: #ff9800; background: rgba(255, 152, 0, 0.15); box-shadow: 0 8px 28px rgba(255, 152, 0, 0.3); color: #ffcc80; }
+        
+        .payment-btn[data-method="রকেট"] { border-color: rgba(156, 39, 176, 0.3); color: #ce93d8; }
+        .payment-btn[data-method="রকেট"].active { border-color: #9c27b0; background: rgba(156, 39, 176, 0.15); box-shadow: 0 8px 28px rgba(156, 39, 176, 0.3); color: #e1bee7; }
+        
+        .payment-btn[data-method="ব্যাংক"] { border-color: rgba(33, 150, 243, 0.3); color: #64b5f6; }
+        .payment-btn[data-method="ব্যাংক"].active { border-color: #2196f3; background: rgba(33, 150, 243, 0.15); box-shadow: 0 8px 28px rgba(33, 150, 243, 0.3); color: #90caf9; }
+        
+        /* ===== সামারি ===== */
         .summary {
-            background: #0a0c10;
-            padding: 16px;
-            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 14px;
+            padding: 16px 18px;
             margin-top: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
         }
+        
         .summary-row {
             display: flex;
             justify-content: space-between;
@@ -109,139 +236,188 @@
             font-size: 14px;
             color: #8b96a5;
         }
+        
+        .summary-row .value {
+            color: #d4dce8;
+            font-weight: 500;
+        }
+        
         .summary-row.total {
-            border-top: 1px solid #2a323d;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
             margin-top: 8px;
             padding-top: 12px;
             font-size: 18px;
             font-weight: 700;
             color: #eef1f5;
         }
-        .total-amount { color: #f0b429; }
+        
+        .summary-row.total .value {
+            background: linear-gradient(135deg, #f0b429, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* ===== সাবমিট বাটন ===== */
         .submit-btn {
             width: 100%;
             padding: 16px;
-            background: #f0b429;
+            background: linear-gradient(135deg, #f0b429, #f5c842);
             color: #1a1400;
             border: none;
-            border-radius: 14px;
+            border-radius: 16px;
             font-size: 16px;
             font-weight: 800;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             margin-top: 16px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 6px 28px rgba(240, 180, 41, 0.3);
         }
+        
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 40px rgba(240, 180, 41, 0.4);
+        }
+        
+        .submit-btn:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+        
         .submit-btn:disabled {
-            background: #3a3a2e;
-            color: #6b6b5a;
+            background: #2a2a3e;
+            color: #5a5a6e;
+            box-shadow: none;
             cursor: not-allowed;
         }
-        .error {
-            background: rgba(229,83,75,0.1);
-            border: 1px solid #e5534b;
-            color: #e5534b;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 16px;
-            text-align: center;
-        }
-        .success {
-            background: rgba(63,185,80,0.1);
-            border: 1px solid #3fb950;
-            color: #3fb950;
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 16px;
-            text-align: center;
-        }
+        
+        /* ===== লোডিং ===== */
         .loading {
             text-align: center;
-            padding: 40px;
-            color: #8b96a5;
+            padding: 50px 20px;
         }
-        .spinner {
-            border: 3px solid #2a323d;
+        
+        .loading .spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid rgba(255, 255, 255, 0.06);
             border-top: 3px solid #f0b429;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+            animation: spin 0.9s linear infinite;
             margin: 0 auto 16px;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .loading p {
+            color: #6a7588;
+            font-size: 14px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* ===== মেসেজ ===== */
+        .error {
+            background: rgba(229, 83, 75, 0.12);
+            border: 1px solid rgba(229, 83, 75, 0.2);
+            color: #e5534b;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .success {
+            background: rgba(63, 185, 80, 0.12);
+            border: 1px solid rgba(63, 185, 80, 0.2);
+            color: #3fb950;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        /* ===== স্ক্রিন ===== */
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- ===== হেডার ===== -->
         <div class="header">
+            <div class="icon">🚀</div>
             <h1>XR7 Task</h1>
-            <div class="subtitle">কয়েন সেল করুন</div>
-            <div style="margin-top: 12px;">
-                <div class="status">
-                    <div class="status-dot"></div>
-                    <span id="statusText">লোড হচ্ছে...</span>
-                </div>
+            <div class="subtitle">কয়েন সেল করুন • সহজে • দ্রুত</div>
+            <div class="status">
+                <span class="status-dot"></span>
+                <span id="statusText">লোড হচ্ছে...</span>
             </div>
         </div>
 
+        <!-- ===== মেসেজ ===== -->
         <div id="messageArea"></div>
 
+        <!-- ===== লোডিং ===== -->
         <div id="loadingArea" class="loading">
             <div class="spinner"></div>
             <p>ডেটা লোড হচ্ছে...</p>
         </div>
 
-        <div id="formArea" style="display: none;">
+        <!-- ===== ফর্ম ===== -->
+        <div id="formArea" class="hidden">
             <div class="card">
                 <div class="form-group">
-                    <label>কোন কয়েন বিক্রি করবেন</label>
+                    <label><span class="label-icon">🪙</span> কোন কয়েন বিক্রি করবেন?</label>
                     <select id="coinSelect" required>
                         <option value="">লোড হচ্ছে...</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>পরিমাণ (কয়েন সংখ্যা)</label>
+                    <label><span class="label-icon">🔢</span> পরিমাণ (কয়েন সংখ্যা)</label>
                     <input type="number" id="amountInput" placeholder="যেমন: 1000" min="1" value="1000">
                 </div>
 
                 <div class="form-group">
-                    <label>পেমেন্ট মেথড</label>
+                    <label><span class="label-icon">💳</span> পেমেন্ট মেথড</label>
                     <div class="payment-methods" id="paymentMethods"></div>
                 </div>
 
                 <div class="form-group">
-                    <label>অ্যাকাউন্ট নাম্বার</label>
-                    <input type="text" id="accountNumber" placeholder="বিকাশ/নগদ/রকেট/ব্যাংক নাম্বার">
+                    <label><span class="label-icon">📱</span> অ্যাকাউন্ট নাম্বার</label>
+                    <input type="text" id="accountNumber" placeholder="বিকাশ / নগদ / রকেট / ব্যাংক নাম্বার">
                 </div>
 
                 <div class="form-group" id="couponGroup" style="display: none;">
-                    <label>কুপন / কোড</label>
-                    <input type="text" id="couponCode" placeholder="কুপন/কোড দিন">
+                    <label><span class="label-icon">🎟️</span> কুপন / কোড</label>
+                    <input type="text" id="couponCode" placeholder="আপনার কুপন কোড লিখুন">
                 </div>
 
+                <!-- ===== সামারি ===== -->
                 <div class="summary">
                     <div class="summary-row">
-                        <span>রেট</span>
-                        <span id="rateDisplay">—</span>
+                        <span>💵 রেট</span>
+                        <span class="value" id="rateDisplay">—</span>
                     </div>
                     <div class="summary-row">
-                        <span>পরিমাণ</span>
-                        <span id="amountDisplay">0 কয়েন</span>
+                        <span>📦 পরিমাণ</span>
+                        <span class="value" id="amountDisplay">0 কয়েন</span>
                     </div>
                     <div class="summary-row total">
-                        <span>মোট পাবেন</span>
-                        <span class="total-amount" id="totalAmount">0.00 টাকা</span>
+                        <span>💰 মোট পাবেন</span>
+                        <span class="value" id="totalAmount">0.00 টাকা</span>
                     </div>
                 </div>
-            </div>
 
-            <button class="submit-btn" id="submitBtn" disabled>সেল রিকোয়েস্ট পাঠান</button>
+                <button class="submit-btn" id="submitBtn" disabled>✅ সেল রিকোয়েস্ট পাঠান</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // ✅ সঠিক Firebase Config (social-media-task)
+        // ==================== Firebase Config ====================
         const firebaseConfig = {
             apiKey: "AIzaSyBvZ8H5K9qJxYqKxYqKxYqKxYqKxYqKxYq",
             authDomain: "social-media-task-88c67.firebaseapp.com",
@@ -274,11 +450,12 @@
         const loadingArea = document.getElementById('loadingArea');
         const formArea = document.getElementById('formArea');
 
+        // ==================== রেন্ডার ====================
         function renderStatus() {
             if (sellingStatus === 'open') {
-                statusText.textContent = 'সেলিং চালু আছে';
+                statusText.textContent = '🟢 সেলিং চালু আছে';
             } else {
-                statusText.textContent = 'সেলিং বন্ধ';
+                statusText.textContent = '🔴 সেলিং বন্ধ';
             }
             validateForm();
         }
@@ -286,10 +463,10 @@
         function renderCoins() {
             const activeCoins = Object.entries(COINS).filter(([_, c]) => c && c.active !== false);
             
-            coinSelect.innerHTML = '<option value="">কয়েন সিলেক্ট করুন</option>';
+            coinSelect.innerHTML = '<option value="">🔽 কয়েন সিলেক্ট করুন</option>';
             
             if (activeCoins.length === 0) {
-                coinSelect.innerHTML = '<option value="">কোনো কয়েন নেই</option>';
+                coinSelect.innerHTML = '<option value="">❌ কোনো কয়েন নেই</option>';
                 selectedCoinName = null;
                 updateSummary();
                 return;
@@ -303,7 +480,7 @@
                 const option = document.createElement('option');
                 option.value = name;
                 const rate = coin.rate || 0;
-                option.textContent = `${name} - ${rate} টাকা (প্রতি ১০০০)`;
+                option.textContent = `${name} — ${rate} টাকা (প্রতি ১০০০)`;
                 option.dataset.rate = rate;
                 option.dataset.requiresCoupon = coin.requires_coupon_code || false;
                 if (name === selectedCoinName) {
@@ -316,7 +493,7 @@
         }
 
         function renderMethods() {
-            const methods = PAYMENT_METHODS.length ? PAYMENT_METHODS : ["Bikas", "Nogod", "Rocket", "Bank"];
+            const methods = PAYMENT_METHODS.length ? PAYMENT_METHODS : ["বিকাশ", "নগদ", "রকেট", "ব্যাংক"];
             if (!selectedMethod || !methods.includes(selectedMethod)) {
                 selectedMethod = methods[0];
             }
@@ -346,7 +523,7 @@
             const rate = coin ? (coin.rate || 0) : 0;
             const total = (amount / 1000) * rate;
 
-            document.getElementById('rateDisplay').textContent = coin ? (rate + ' টাকা / ১,০০০ কয়েন') : '—';
+            document.getElementById('rateDisplay').textContent = coin ? (rate + ' টাকা') : '—';
             document.getElementById('amountDisplay').textContent = amount.toLocaleString('en-US') + ' কয়েন';
             document.getElementById('totalAmount').textContent = total.toFixed(2) + ' টাকা';
 
@@ -374,6 +551,7 @@
             submitBtn.disabled = !formValid;
         }
 
+        // ==================== ইভেন্ট লিসেনার ====================
         coinSelect.addEventListener('change', () => {
             selectedCoinName = coinSelect.value;
             updateSummary();
@@ -383,6 +561,7 @@
         accountInput.addEventListener('input', validateForm);
         couponInput.addEventListener('input', validateForm);
 
+        // ==================== সাবমিট ====================
         submitBtn.addEventListener('click', () => {
             const coin = currentCoin();
             if (!coin || !selectedCoinName) return;
@@ -406,13 +585,14 @@
 
             tg.sendData(JSON.stringify(payload));
 
-            document.getElementById('formArea').style.display = 'none';
-            document.getElementById('loadingArea').style.display = 'block';
+            document.getElementById('formArea').classList.add('hidden');
+            document.getElementById('loadingArea').classList.remove('hidden');
             document.querySelector('#loadingArea p').textContent = '✅ রিকোয়েস্ট পাঠানো হয়েছে!';
 
             setTimeout(() => tg.close(), 2000);
         });
 
+        // ==================== ডেটা লোড ====================
         async function loadData() {
             try {
                 const doc = await db.collection('xr7_settings').doc('main').get();
@@ -431,8 +611,8 @@
                 renderCoins();
                 renderMethods();
 
-                loadingArea.style.display = 'none';
-                formArea.style.display = 'block';
+                loadingArea.classList.add('hidden');
+                formArea.classList.remove('hidden');
 
             } catch (error) {
                 console.error('Load error:', error);
