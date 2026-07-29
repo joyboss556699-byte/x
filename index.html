@@ -8,7 +8,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #0e1116;
@@ -17,7 +21,10 @@
             padding: 20px;
             padding-bottom: 100px;
         }
-        .container { max-width: 500px; margin: 0 auto; }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
         .header {
             text-align: center;
             padding: 20px;
@@ -26,8 +33,15 @@
             margin-bottom: 20px;
             border: 1px solid #2a323d;
         }
-        .header h1 { color: #f0b429; font-size: 24px; }
-        .header .subtitle { color: #8b96a5; font-size: 14px; margin-top: 5px; }
+        .header h1 {
+            color: #f0b429;
+            font-size: 24px;
+        }
+        .header .subtitle {
+            color: #8b96a5;
+            font-size: 14px;
+            margin-top: 5px;
+        }
         .status {
             display: inline-flex;
             align-items: center;
@@ -46,7 +60,10 @@
             border-radius: 50%;
             animation: pulse 2s infinite;
         }
-        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
         .card {
             background: #161b22;
             border-radius: 15px;
@@ -54,19 +71,9 @@
             margin-bottom: 20px;
             border: 1px solid #2a323d;
         }
-        .debug-info {
-            background: #0a0c10;
-            padding: 12px;
-            border-radius: 10px;
-            font-family: monospace;
-            font-size: 11px;
-            color: #3fb950;
-            overflow-x: auto;
-            margin-bottom: 20px;
-            border: 1px solid #1d232c;
-            display: none;
+        .form-group {
+            margin-bottom: 18px;
         }
-        .form-group { margin-bottom: 18px; }
         label {
             display: block;
             margin-bottom: 6px;
@@ -84,8 +91,13 @@
             font-size: 16px;
             outline: none;
         }
-        select:focus, input:focus { border-color: #f0b429; }
-        select option { background: #0e1116; color: #eef1f5; }
+        select:focus, input:focus {
+            border-color: #f0b429;
+        }
+        select option {
+            background: #0e1116;
+            color: #eef1f5;
+        }
         .payment-methods {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -129,7 +141,9 @@
             font-weight: 700;
             color: #eef1f5;
         }
-        .total-amount { color: #f0b429; }
+        .total-amount {
+            color: #f0b429;
+        }
         .submit-btn {
             width: 100%;
             padding: 16px;
@@ -180,7 +194,10 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 16px;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -196,7 +213,6 @@
             </div>
         </div>
 
-        <div id="debugInfo" class="debug-info"></div>
         <div id="messageArea"></div>
 
         <div id="loadingArea" class="loading">
@@ -254,7 +270,7 @@
     </div>
 
     <script>
-        // ==================== 🔥 Firebase Config (social-media-task) ====================
+        // ==================== Firebase Config ====================
         const firebaseConfig = {
             apiKey: "AIzaSyBvZ8H5K9qJxYqKxYqKxYqKxYqKxYqKxYq",
             authDomain: "social-media-task-88c67.firebaseapp.com",
@@ -264,22 +280,18 @@
             appId: "1:123456789:web:abc123"
         };
 
-        // ==================== Firebase Initialize ====================
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // ==================== Telegram WebApp ====================
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ==================== State ====================
         let COINS = {};
         let PAYMENT_METHODS = [];
         let sellingStatus = 'closed';
         let selectedCoinName = null;
         let selectedMethod = null;
 
-        // ==================== DOM Elements ====================
         const coinSelect = document.getElementById('coinSelect');
         const paymentMethodsDiv = document.getElementById('paymentMethods');
         const amountInput = document.getElementById('amountInput');
@@ -288,17 +300,9 @@
         const couponInput = document.getElementById('couponCode');
         const submitBtn = document.getElementById('submitBtn');
         const statusText = document.getElementById('statusText');
-        const debugInfo = document.getElementById('debugInfo');
         const loadingArea = document.getElementById('loadingArea');
         const formArea = document.getElementById('formArea');
 
-        // ==================== Debug ====================
-        function updateDebug(text) {
-            debugInfo.style.display = 'block';
-            debugInfo.textContent = text;
-        }
-
-        // ==================== Render Functions ====================
         function renderStatus() {
             if (sellingStatus === 'open') {
                 statusText.textContent = 'সেলিং চালু আছে';
@@ -327,8 +331,9 @@
             activeCoins.forEach(([name, coin]) => {
                 const option = document.createElement('option');
                 option.value = name;
-                option.textContent = `${name} - ${coin.rate || 0} টাকা (প্রতি ১০০০)`;
-                option.dataset.rate = coin.rate || 0;
+                const rate = coin.rate || 0;
+                option.textContent = `${name} - ${rate} টাকা (প্রতি ১০০০)`;
+                option.dataset.rate = rate;
                 option.dataset.requiresCoupon = coin.requires_coupon_code || false;
                 if (name === selectedCoinName) {
                     option.selected = true;
@@ -340,7 +345,7 @@
         }
 
         function renderMethods() {
-            const methods = PAYMENT_METHODS.length ? PAYMENT_METHODS : ["বিকাশ", "নগদ", "রকেট", "ব্যাংক"];
+            const methods = PAYMENT_METHODS.length ? PAYMENT_METHODS : ["Bikas", "Nogod", "Rocket", "Bank"];
             if (!selectedMethod || !methods.includes(selectedMethod)) {
                 selectedMethod = methods[0];
             }
@@ -374,7 +379,6 @@
             document.getElementById('amountDisplay').textContent = amount.toLocaleString('en-US') + ' কয়েন';
             document.getElementById('totalAmount').textContent = total.toFixed(2) + ' টাকা';
 
-            // Coupon field
             if (coin && coin.requires_coupon_code) {
                 couponGroup.style.display = 'block';
             } else {
@@ -399,7 +403,6 @@
             submitBtn.disabled = !formValid;
         }
 
-        // ==================== Event Listeners ====================
         coinSelect.addEventListener('change', () => {
             selectedCoinName = coinSelect.value;
             updateSummary();
@@ -409,7 +412,6 @@
         accountInput.addEventListener('input', validateForm);
         couponInput.addEventListener('input', validateForm);
 
-        // ==================== Submit ====================
         submitBtn.addEventListener('click', () => {
             const coin = currentCoin();
             if (!coin || !selectedCoinName) return;
@@ -433,7 +435,6 @@
 
             tg.sendData(JSON.stringify(payload));
 
-            // Show success
             document.getElementById('formArea').style.display = 'none';
             document.getElementById('loadingArea').style.display = 'block';
             document.querySelector('#loadingArea p').textContent = '✅ রিকোয়েস্ট পাঠানো হয়েছে!';
@@ -441,15 +442,11 @@
             setTimeout(() => tg.close(), 2000);
         });
 
-        // ==================== Load Data from Firestore ====================
         async function loadData() {
             try {
-                updateDebug('⏳ Firebase থেকে ডেটা লোড হচ্ছে...');
-
                 const doc = await db.collection('xr7_settings').doc('main').get();
 
                 if (!doc.exists) {
-                    updateDebug('❌ সেটিংস ডকুমেন্ট পাওয়া যায়নি!');
                     statusText.textContent = 'সেটিংস নেই';
                     return;
                 }
@@ -458,22 +455,6 @@
                 COINS = data.coins || {};
                 PAYMENT_METHODS = data.payment_methods || [];
                 sellingStatus = data.selling_status || 'closed';
-
-                // Debug info
-                let debugText = `📌 প্রজেক্ট: social-media-task-88c67\n`;
-                debugText += `📌 স্ট্যাটাস: ${sellingStatus}\n`;
-                debugText += `📌 কয়েন সংখ্যা: ${Object.keys(COINS).length}\n`;
-                if (Object.keys(COINS).length > 0) {
-                    debugText += `\n✅ সক্রিয় কয়েন:\n`;
-                    for (const [name, c] of Object.entries(COINS)) {
-                        if (c.active) {
-                            debugText += `  • ${name}: ${c.rate} টাকা\n`;
-                        }
-                    }
-                } else {
-                    debugText += `\n❌ কোনো কয়েন নেই!`;
-                }
-                updateDebug(debugText);
 
                 renderStatus();
                 renderCoins();
@@ -484,12 +465,10 @@
 
             } catch (error) {
                 console.error('Load error:', error);
-                updateDebug(`❌ Error: ${error.message}`);
                 statusText.textContent = 'ডেটা লোড হয়নি';
             }
         }
 
-        // ==================== Start ====================
         window.addEventListener('load', loadData);
     </script>
 </body>
