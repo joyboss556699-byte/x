@@ -241,6 +241,11 @@
     <div class="status-pill"><span class="dot" id="statusDot"></span><span id="statusText">লোড হচ্ছে...</span></div>
 </div>
 
+<!-- ডিবাগ বক্স: সমস্যা ধরার জন্য সাময়িক, ঠিক হয়ে গেলে এই <div> টা মুছে ফেলবেন -->
+<div id="debugBox" style="margin:14px 20px;padding:12px 14px;background:#1d232c;border:1px solid #2a323d;border-radius:10px;font-size:11px;color:#8b96a5;font-family:monospace;white-space:pre-wrap;word-break:break-all;">
+ডিবাগ তথ্য লোড হচ্ছে...
+</div>
+
 <div id="formScreen" class="screen visible">
     <div class="section">
         <span class="label">কোন কয়েন বিক্রি করবেন</span>
@@ -325,11 +330,28 @@
     const statusText = document.getElementById('statusText');
     const statusDot = document.getElementById('statusDot');
     const noteBox = document.getElementById('noteBox');
+    const debugBox = document.getElementById('debugBox');
+
+    function updateDebugBox(text) {
+        if (debugBox) debugBox.textContent = text;
+    }
+
+    updateDebugBox(
+        "প্রজেক্ট: " + firebaseConfig.projectId + "\n" +
+        "ডকুমেন্ট পাথ: xr7_settings/main\n" +
+        "স্ট্যাটাস: কানেক্ট হচ্ছে..."
+    );
 
     // Real-time listener
     db.collection('xr7_settings').doc('main').onSnapshot((doc) => {
         if (!doc.exists) {
             statusText.textContent = 'সেটিংস পাওয়া যায়নি';
+            updateDebugBox(
+                "প্রজেক্ট: " + firebaseConfig.projectId + "\n" +
+                "ডকুমেন্ট পাথ: xr7_settings/main\n" +
+                "❌ এই নামে কোনো ডকুমেন্ট Firestore-এ পাওয়া যায়নি।\n" +
+                "(এই প্রজেক্টে xr7_settings/main বলে কিছু নেই — বট হয়তো অন্য Firebase প্রজেক্টে লিখছে।)"
+            );
             return;
         }
         const data = doc.data();
@@ -337,6 +359,15 @@
         COINS = data.coins || {};
         PAYMENT_METHODS = data.payment_methods || [];
         sellingStatus = data.selling_status || 'closed';
+
+        updateDebugBox(
+            "প্রজেক্ট: " + firebaseConfig.projectId + "\n" +
+            "ডকুমেন্ট পাথ: xr7_settings/main\n" +
+            "selling_status: " + JSON.stringify(data.selling_status) + "\n" +
+            "coins ফিল্ড টাইপ: " + (data.coins === undefined ? "নেই (undefined)" : typeof data.coins) + "\n" +
+            "coins এর সংখ্যা: " + Object.keys(COINS).length + "\n" +
+            "coins raw: " + JSON.stringify(data.coins)
+        );
 
         if (selectedCoinName && COINS[selectedCoinName] && COINS[selectedCoinName].active === false) {
             selectedCoinName = null;
@@ -349,6 +380,11 @@
         console.error('Settings fetch error:', err);
         statusText.textContent = 'ডেটা লোড করতে সমস্যা হচ্ছে';
         statusDot.style.background = 'var(--danger)';
+        updateDebugBox(
+            "প্রজেক্ট: " + firebaseConfig.projectId + "\n" +
+            "❌ Firestore থেকে ডেটা পড়তে error হয়েছে:\n" + (err && err.message ? err.message : err) +
+            "\n(এটা সাধারণত Firestore security rules read permission ব্লক করলে হয়।)"
+        );
     });
 
     function renderStatus() {
