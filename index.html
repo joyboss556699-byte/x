@@ -141,6 +141,11 @@
         }
         select:focus, input:focus { border-color: #f0b429; }
         select option { background: #0e1116; color: #ffffff; }
+        #coinSelect {
+            border-left-width: 5px;
+            border-left-color: #f0b429;
+            transition: border-left-color 0.3s, box-shadow 0.3s;
+        }
 
         /* ===== পেমেন্ট বাটন — Medium Blue ===== */
         .payment-methods {
@@ -167,13 +172,29 @@
             color: #ffffff;
         }
 
-        /* ===== সামারি — Yellow বক্স ===== */
+        /* ===== সামারি — Yellow বক্স + লাইটিং ফ্ল্যাশ ===== */
         .summary {
             background: linear-gradient(135deg, #f0b429, #caa000);
             padding: 16px;
             border-radius: 12px;
             margin-top: 16px;
             border: 1px solid #7a5c15;
+            animation: summaryGlow 1.8s ease-in-out infinite;
+        }
+        @keyframes summaryGlow {
+            0% {
+                box-shadow: 0 0 6px rgba(240, 180, 41, 0.25),
+                            0 0 14px rgba(240, 180, 41, 0.15);
+            }
+            50% {
+                box-shadow: 0 0 22px rgba(240, 180, 41, 0.9),
+                            0 0 50px rgba(240, 180, 41, 0.55),
+                            0 0 80px rgba(240, 180, 41, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 6px rgba(240, 180, 41, 0.25),
+                            0 0 14px rgba(240, 180, 41, 0.15);
+            }
         }
         .summary-row {
             display: flex;
@@ -370,6 +391,21 @@
         let selectedCoinName = null;
         let selectedMethod = null;
 
+        // ==================== কয়েন অনুযায়ী কালার ====================
+        function getCoinColor(name) {
+            const n = (name || '').toLowerCase();
+            if (n.includes('niva')) return '#4a7dff';           // নীল
+            if (n.includes('topfollower')) return '#29b6f6';    // হালকা নীল
+            if (n.includes('top follow') || n.includes('top-follow')) return '#e8871e'; // কমলা
+            if (n.includes('ns coin') || n.includes('ns ')) return '#16a085'; // সবুজ-নীল
+            return '#f0b429'; // ডিফল্ট গোল্ড
+        }
+        function applyCoinColor() {
+            const color = getCoinColor(selectedCoinName);
+            coinSelect.style.borderLeftColor = color;
+            coinSelect.style.boxShadow = `0 0 12px ${color}55`;
+        }
+
         const coinSelect = document.getElementById('coinSelect');
         const paymentMethodsDiv = document.getElementById('paymentMethods');
         const amountInput = document.getElementById('amountInput');
@@ -436,10 +472,12 @@
                 selectedCoinName = this.value;
                 updateSummary();
                 showCoinNote();
+                applyCoinColor();
             };
 
             updateSummary();
             showCoinNote();
+            applyCoinColor();
         }
 
         function showCoinNote() {
