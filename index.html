@@ -598,32 +598,31 @@
             showCoinNote();
         }
 
-        function extractCopyValue(note) {
-            // "username: patgivq তে পাঠান" এর মতো টেক্সট থেকে শুধু username/কোডটুকু বের করার চেষ্টা করে
-            const m = note.match(/username[:\s]*([^\s,।]+)/i);
-            return m ? m[1] : note;
-        }
-
         function showCoinNote() {
             const coin = currentCoin();
             if (coin) {
+                // ===== নোট (শুধু নির্দেশনা/নোটিস, admin_note থেকে) =====
                 const note = coin.admin_note || '';
                 if (note) {
                     noteBox.textContent = '📌 ' + note;
                     noteBox.style.display = 'block';
+                } else {
+                    noteBox.style.display = 'none';
+                }
 
+                // ===== ইউজারনেম কপি বাটন (আলাদা receive_username ফিল্ড থেকে) =====
+                const receiveUsername = (coin.receive_username || '').trim();
+                if (receiveUsername) {
                     copyUsernameBtn.style.display = 'block';
-                    copyUsernameBtn.textContent = '📋 ইউজারনেম কপি করুন';
+                    copyUsernameBtn.textContent = '📋 ইউজারনেম কপি করুন (' + receiveUsername + ')';
                     copyUsernameBtn.onclick = function() {
-                        const value = extractCopyValue(note);
-                        navigator.clipboard.writeText(value).then(() => {
+                        navigator.clipboard.writeText(receiveUsername).then(() => {
                             const original = copyUsernameBtn.textContent;
                             copyUsernameBtn.textContent = '✅ কপি হয়েছে!';
                             setTimeout(() => { copyUsernameBtn.textContent = original; }, 1500);
                         }).catch(() => {});
                     };
                 } else {
-                    noteBox.style.display = 'none';
                     copyUsernameBtn.style.display = 'none';
                 }
             } else {
