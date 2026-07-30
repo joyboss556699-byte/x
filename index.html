@@ -141,7 +141,7 @@
         }
         select:focus, input:focus { border-color: #f0b429; }
         select option { background: #0e1116; color: #ffffff; }
-        /* ===== কয়েন বাটন — প্রতিটি কয়েনের নিজস্ব কালার ===== */
+        /* ===== কয়েন বাটন — Deep Red + লাইটিং ===== */
         .coin-buttons {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -150,28 +150,45 @@
         .coin-btn {
             position: relative;
             padding: 14px 14px 14px 18px;
-            border: 1.5px solid #2a323d;
+            border: 1.5px solid #8b0000;
             border-left-width: 5px;
+            border-left-color: #ff3b3b;
             border-radius: 12px;
-            background: #0e1116;
+            background: linear-gradient(135deg, #6b0000, #3d0000);
             color: #ffffff;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             text-align: left;
             transition: all 0.25s;
+            animation: coinBtnGlow 2s ease-in-out infinite;
+        }
+        @keyframes coinBtnGlow {
+            0% {
+                box-shadow: 0 0 4px rgba(255, 0, 0, 0.25),
+                            0 0 10px rgba(255, 0, 0, 0.15);
+            }
+            50% {
+                box-shadow: 0 0 16px rgba(255, 30, 30, 0.85),
+                            0 0 34px rgba(255, 30, 30, 0.5);
+            }
+            100% {
+                box-shadow: 0 0 4px rgba(255, 0, 0, 0.25),
+                            0 0 10px rgba(255, 0, 0, 0.15);
+            }
         }
         .coin-btn .coin-rate {
             display: block;
             font-weight: 400;
             font-size: 12px;
             color: #ffffff;
-            opacity: 0.8;
+            opacity: 0.85;
             margin-top: 3px;
         }
         .coin-btn.active {
-            background: rgba(255,255,255,0.06);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+            background: linear-gradient(135deg, #b71c1c, #7a0000);
+            border-color: #ff5252;
+            border-left-color: #f0b429;
         }
         .coin-btn.active::after {
             content: "✓";
@@ -179,6 +196,7 @@
             top: 10px;
             right: 12px;
             font-weight: 800;
+            color: #f0b429;
         }
 
         /* ===== পেমেন্ট বাটন — Medium Blue ===== */
@@ -206,28 +224,28 @@
             color: #ffffff;
         }
 
-        /* ===== সামারি — Yellow বক্স + লাইটিং ফ্ল্যাশ ===== */
+        /* ===== সামারি — Deep Yellow বক্স + লাইটিং ফ্ল্যাশ ===== */
         .summary {
-            background: linear-gradient(135deg, #f0b429, #caa000);
+            background: linear-gradient(135deg, #c99700, #7a5c00);
             padding: 16px;
             border-radius: 12px;
             margin-top: 16px;
-            border: 1px solid #7a5c15;
+            border: 1px solid #4d3a00;
             animation: summaryGlow 1.8s ease-in-out infinite;
         }
         @keyframes summaryGlow {
             0% {
-                box-shadow: 0 0 6px rgba(240, 180, 41, 0.25),
-                            0 0 14px rgba(240, 180, 41, 0.15);
+                box-shadow: 0 0 6px rgba(240, 180, 41, 0.3),
+                            0 0 14px rgba(240, 180, 41, 0.2);
             }
             50% {
-                box-shadow: 0 0 22px rgba(240, 180, 41, 0.9),
-                            0 0 50px rgba(240, 180, 41, 0.55),
-                            0 0 80px rgba(240, 180, 41, 0.3);
+                box-shadow: 0 0 26px rgba(240, 180, 41, 1),
+                            0 0 55px rgba(240, 180, 41, 0.65),
+                            0 0 90px rgba(240, 180, 41, 0.4);
             }
             100% {
-                box-shadow: 0 0 6px rgba(240, 180, 41, 0.25),
-                            0 0 14px rgba(240, 180, 41, 0.15);
+                box-shadow: 0 0 6px rgba(240, 180, 41, 0.3),
+                            0 0 14px rgba(240, 180, 41, 0.2);
             }
         }
         .summary-row {
@@ -485,7 +503,7 @@
 
                 const btn = document.createElement('div');
                 btn.className = 'coin-btn' + (name === selectedCoinName ? ' active' : '');
-                btn.style.borderLeftColor = getCoinColor(name);
+                // এখন সব বাটন uniform deep red (CSS থেকে), তাই আলাদা কালার সেট করা হচ্ছে না
 
                 let icons = '';
                 if (requiresUsername) icons += ' 📸';
