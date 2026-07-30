@@ -141,6 +141,21 @@
         }
         select:focus, input:focus { border-color: #f0b429; }
         select option { background: #0e1116; color: #ffffff; }
+        input[type="file"] {
+            padding: 10px;
+            color: #ffffff;
+            font-size: 13px;
+        }
+        input[type="file"]::-webkit-file-upload-button {
+            background: #4169e1;
+            color: #ffffff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            margin-right: 10px;
+            cursor: pointer;
+            font-weight: 600;
+        }
         /* ===== কয়েন বাটন — Deep Red + লাইটিং ===== */
         .coin-buttons {
             display: grid;
@@ -398,6 +413,14 @@
                     <small style="color: #ffffff; font-size: 12px; display: block; margin-top: 4px;">🎟️ TOP Follow Coin সেল করতে আপনার কুপন কোড দিন</small>
                 </div>
 
+                <!-- স্ক্রিনশট আপলোড ফিল্ড -->
+                <div class="form-group" id="screenshotGroup" style="display: none;">
+                    <label>স্ক্রিনশট আপলোড করুন <span class="required">*</span></label>
+                    <input type="file" id="screenshotInput" accept="image/*">
+                    <img id="screenshotPreview" style="display:none; max-width: 100%; border-radius: 12px; margin-top: 10px; border: 1.5px solid #2a323d;">
+                    <small style="color: #ffffff; font-size: 12px; display: block; margin-top: 4px;">📎 প্রমাণ হিসেবে স্ক্রিনশট আপলোড করুন</small>
+                </div>
+
                 <div class="summary">
                     <div class="summary-row">
                         <span>রেট</span>
@@ -464,6 +487,10 @@
         const usernameInput = document.getElementById('usernameInput');
         const couponGroup = document.getElementById('couponGroup');
         const couponInput = document.getElementById('couponCode');
+        const screenshotGroup = document.getElementById('screenshotGroup');
+        const screenshotInput = document.getElementById('screenshotInput');
+        const screenshotPreview = document.getElementById('screenshotPreview');
+        let screenshotData = null;
         const submitBtn = document.getElementById('submitBtn');
         const statusText = document.getElementById('statusText');
         const loadingArea = document.getElementById('loadingArea');
@@ -471,6 +498,25 @@
         const noteBox = document.getElementById('noteBox');
 
         // ==================== রেন্ডার ====================
+        // স্ক্রিনশট আপলোড
+        screenshotInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    screenshotData = event.target.result; // Base64
+                    screenshotPreview.src = screenshotData;
+                    screenshotPreview.style.display = 'block';
+                    validateForm();
+                };
+                reader.readAsDataURL(file);
+            } else {
+                screenshotData = null;
+                screenshotPreview.style.display = 'none';
+                validateForm();
+            }
+        });
+
         function renderStatus() {
             if (sellingStatus === 'open') {
                 statusText.textContent = 'সেলিং চালু আছে';
@@ -500,6 +546,7 @@
                 const rate = coin.rate || 0;
                 const requiresUsername = coin.requires_username || false;
                 const requiresCoupon = coin.requires_coupon_code || false;
+                const requiresScreenshot = coin.requires_screenshot || false;
 
                 const btn = document.createElement('div');
                 btn.className = 'coin-btn' + (name === selectedCoinName ? ' active' : '');
@@ -508,6 +555,7 @@
                 let icons = '';
                 if (requiresUsername) icons += ' 📸';
                 if (requiresCoupon) icons += ' 🎟️';
+                if (requiresScreenshot) icons += ' 📎';
 
                 btn.innerHTML = `${name}${icons}<span class="coin-rate">${rate} টাকা (প্রতি ১০০০)</span>`;
                 btn.dataset.name = name;
@@ -579,15 +627,23 @@
             if (coin) {
                 const requiresUsername = coin.requires_username || false;
                 const requiresCoupon = coin.requires_coupon_code || false;
+                const requiresScreenshot = coin.requires_screenshot || false;
                 
                 usernameGroup.style.display = requiresUsername ? 'block' : 'none';
                 couponGroup.style.display = requiresCoupon ? 'block' : 'none';
+                screenshotGroup.style.display = requiresScreenshot ? 'block' : 'none';
                 
                 if (!requiresUsername) usernameInput.value = '';
                 if (!requiresCoupon) couponInput.value = '';
+                if (!requiresScreenshot) {
+                    screenshotData = null;
+                    screenshotInput.value = '';
+                    screenshotPreview.style.display = 'none';
+                }
             } else {
                 usernameGroup.style.display = 'none';
                 couponGroup.style.display = 'none';
+                screenshotGroup.style.display = 'none';
             }
 
             validateForm();
@@ -604,10 +660,13 @@
             const requiresCoupon = coin && coin.requires_coupon_code;
             const couponOk = !requiresCoupon || couponInput.value.trim().length > 0;
 
+            const requiresScreenshot = coin && coin.requires_screenshot;
+            const screenshotOk = !requiresScreenshot || !!screenshotData;
+
             const amountOk = amount > 0;
             const accountOk = account.length >= 6;
 
-            const formValid = sellingStatus === 'open' && !!coin && amountOk && accountOk && !!selectedMethod && usernameOk && couponOk;
+            const formValid = sellingStatus === 'open' && !!coin && amountOk && accountOk && !!selectedMethod && usernameOk && couponOk && screenshotOk;
             submitBtn.disabled = !formValid;
         }
 
@@ -626,6 +685,7 @@
             
             const requiresUsername = coin.requires_username || false;
             const requiresCoupon = coin.requires_coupon_code || false;
+            const requiresScreenshot = coin.requires_screenshot || false;
 
             const payload = {
                 action: "xr7_sell_request",
@@ -642,6 +702,10 @@
 
             if (requiresCoupon) {
                 payload.coupon_code = couponInput.value.trim();
+            }
+
+            if (requiresScreenshot && screenshotData) {
+                payload.screenshot = screenshotData;
             }
 
             tg.sendData(JSON.stringify(payload));
