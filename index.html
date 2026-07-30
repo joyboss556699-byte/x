@@ -354,6 +354,27 @@
             display: none;
             line-height: 1.5;
         }
+
+        /* ===== ইউজারনেম কপি বাটন ===== */
+        .copy-btn {
+            display: none;
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0 16px;
+            border: 1.5px dashed #f0b429;
+            border-radius: 10px;
+            background: rgba(240,180,41,0.08);
+            color: #f0b429;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .copy-btn:active {
+            transform: scale(0.98);
+            background: rgba(240,180,41,0.18);
+        }
     </style>
 </head>
 <body>
@@ -383,6 +404,8 @@
                     <label>কোন কয়েন বিক্রি করবেন?</label>
                     <div class="coin-buttons" id="coinButtons"></div>
                 </div>
+
+                <div id="copyUsernameBtn" class="copy-btn">📋 ইউজারনেম কপি করুন</div>
 
                 <!-- ইউজারনেম ফিল্ড -->
                 <div class="form-group" id="usernameGroup" style="display: none;">
@@ -496,6 +519,7 @@
         const loadingArea = document.getElementById('loadingArea');
         const formArea = document.getElementById('formArea');
         const noteBox = document.getElementById('noteBox');
+        const copyUsernameBtn = document.getElementById('copyUsernameBtn');
 
         // ==================== রেন্ডার ====================
         // স্ক্রিনশট আপলোড
@@ -574,6 +598,12 @@
             showCoinNote();
         }
 
+        function extractCopyValue(note) {
+            // "username: patgivq তে পাঠান" এর মতো টেক্সট থেকে শুধু username/কোডটুকু বের করার চেষ্টা করে
+            const m = note.match(/username[:\s]*([^\s,।]+)/i);
+            return m ? m[1] : note;
+        }
+
         function showCoinNote() {
             const coin = currentCoin();
             if (coin) {
@@ -581,11 +611,24 @@
                 if (note) {
                     noteBox.textContent = '📌 ' + note;
                     noteBox.style.display = 'block';
+
+                    copyUsernameBtn.style.display = 'block';
+                    copyUsernameBtn.textContent = '📋 ইউজারনেম কপি করুন';
+                    copyUsernameBtn.onclick = function() {
+                        const value = extractCopyValue(note);
+                        navigator.clipboard.writeText(value).then(() => {
+                            const original = copyUsernameBtn.textContent;
+                            copyUsernameBtn.textContent = '✅ কপি হয়েছে!';
+                            setTimeout(() => { copyUsernameBtn.textContent = original; }, 1500);
+                        }).catch(() => {});
+                    };
                 } else {
                     noteBox.style.display = 'none';
+                    copyUsernameBtn.style.display = 'none';
                 }
             } else {
                 noteBox.style.display = 'none';
+                copyUsernameBtn.style.display = 'none';
             }
         }
 
