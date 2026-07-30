@@ -141,10 +141,44 @@
         }
         select:focus, input:focus { border-color: #f0b429; }
         select option { background: #0e1116; color: #ffffff; }
-        #coinSelect {
+        /* ===== কয়েন বাটন — প্রতিটি কয়েনের নিজস্ব কালার ===== */
+        .coin-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .coin-btn {
+            position: relative;
+            padding: 14px 14px 14px 18px;
+            border: 1.5px solid #2a323d;
             border-left-width: 5px;
-            border-left-color: #f0b429;
-            transition: border-left-color 0.3s, box-shadow 0.3s;
+            border-radius: 12px;
+            background: #0e1116;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.25s;
+        }
+        .coin-btn .coin-rate {
+            display: block;
+            font-weight: 400;
+            font-size: 12px;
+            color: #ffffff;
+            opacity: 0.8;
+            margin-top: 3px;
+        }
+        .coin-btn.active {
+            background: rgba(255,255,255,0.06);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        }
+        .coin-btn.active::after {
+            content: "✓";
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            font-weight: 800;
         }
 
         /* ===== পেমেন্ট বাটন — Medium Blue ===== */
@@ -314,9 +348,7 @@
             <div class="card">
                 <div class="form-group">
                     <label>কোন কয়েন বিক্রি করবেন?</label>
-                    <select id="coinSelect" required>
-                        <option value="">লোড হচ্ছে...</option>
-                    </select>
+                    <div class="coin-buttons" id="coinButtons"></div>
                 </div>
 
                 <!-- ইউজারনেম ফিল্ড -->
@@ -391,22 +423,22 @@
         let selectedCoinName = null;
         let selectedMethod = null;
 
-        // ==================== কয়েন অনুযায়ী কালার ====================
+        // ==================== কয়েন অনুযায়ী কালার (যেকোনো নতুন কয়েনের জন্যও কাজ করবে) ====================
+        const COIN_COLOR_PALETTE = ['#4a7dff', '#e8871e', '#16a085', '#29b6f6', '#e84393', '#8e44ad', '#2ecc71', '#f39c12'];
         function getCoinColor(name) {
-            const n = (name || '').toLowerCase();
-            if (n.includes('niva')) return '#4a7dff';           // নীল
-            if (n.includes('topfollower')) return '#29b6f6';    // হালকা নীল
-            if (n.includes('top follow') || n.includes('top-follow')) return '#e8871e'; // কমলা
-            if (n.includes('ns coin') || n.includes('ns ')) return '#16a085'; // সবুজ-নীল
-            return '#f0b429'; // ডিফল্ট গোল্ড
+            const n = (name || '').trim();
+            if (!n) return '#f0b429';
+            let hash = 0;
+            for (let i = 0; i < n.length; i++) {
+                hash = (hash * 31 + n.charCodeAt(i)) >>> 0;
+            }
+            return COIN_COLOR_PALETTE[hash % COIN_COLOR_PALETTE.length];
         }
         function applyCoinColor() {
-            const color = getCoinColor(selectedCoinName);
-            coinSelect.style.borderLeftColor = color;
-            coinSelect.style.boxShadow = `0 0 12px ${color}55`;
+            // এখন প্রতিটি কয়েন বাটনের নিজস্ব কালার renderCoins() এ সেট হয়
         }
 
-        const coinSelect = document.getElementById('coinSelect');
+        const coinButtons = document.getElementById('coinButtons');
         const paymentMethodsDiv = document.getElementById('paymentMethods');
         const amountInput = document.getElementById('amountInput');
         const accountInput = document.getElementById('accountNumber');
@@ -433,10 +465,10 @@
         function renderCoins() {
             const activeCoins = Object.entries(COINS).filter(([_, c]) => c && c.active !== false);
             
-            coinSelect.innerHTML = '<option value="">কয়েন সিলেক্ট করুন</option>';
+            coinButtons.innerHTML = '';
             
             if (activeCoins.length === 0) {
-                coinSelect.innerHTML = '<option value="">কোনো কয়েন নেই</option>';
+                coinButtons.innerHTML = '<div style="color:#ffffff; opacity:0.7; grid-column: 1 / -1;">কোনো কয়েন নেই</div>';
                 selectedCoinName = null;
                 updateSummary();
                 return;
@@ -447,43 +479,39 @@
             }
 
             activeCoins.forEach(([name, coin]) => {
-                const option = document.createElement('option');
-                option.value = name;
                 const rate = coin.rate || 0;
                 const requiresUsername = coin.requires_username || false;
                 const requiresCoupon = coin.requires_coupon_code || false;
-                
-                let label = `${name} — ${rate} টাকা (প্রতি ১০০০)`;
-                if (requiresUsername) label += ' 📸';
-                if (requiresCoupon) label += ' 🎟️';
-                
-                option.textContent = label;
-                option.dataset.rate = rate;
-                option.dataset.requiresUsername = requiresUsername;
-                option.dataset.requiresCoupon = requiresCoupon;
-                option.dataset.adminNote = coin.admin_note || '';
-                if (name === selectedCoinName) {
-                    option.selected = true;
-                }
-                coinSelect.appendChild(option);
-            });
 
-            coinSelect.onchange = function() {
-                selectedCoinName = this.value;
-                updateSummary();
-                showCoinNote();
-                applyCoinColor();
-            };
+                const btn = document.createElement('div');
+                btn.className = 'coin-btn' + (name === selectedCoinName ? ' active' : '');
+                btn.style.borderLeftColor = getCoinColor(name);
+
+                let icons = '';
+                if (requiresUsername) icons += ' 📸';
+                if (requiresCoupon) icons += ' 🎟️';
+
+                btn.innerHTML = `${name}${icons}<span class="coin-rate">${rate} টাকা (প্রতি ১০০০)</span>`;
+                btn.dataset.name = name;
+
+                btn.addEventListener('click', () => {
+                    selectedCoinName = name;
+                    renderCoins();
+                    updateSummary();
+                    showCoinNote();
+                });
+
+                coinButtons.appendChild(btn);
+            });
 
             updateSummary();
             showCoinNote();
-            applyCoinColor();
         }
 
         function showCoinNote() {
-            const selectedOption = coinSelect.options[coinSelect.selectedIndex];
-            if (selectedOption && selectedOption.value) {
-                const note = selectedOption.dataset.adminNote || '';
+            const coin = currentCoin();
+            if (coin) {
+                const note = coin.admin_note || '';
                 if (note) {
                     noteBox.textContent = '📌 ' + note;
                     noteBox.style.display = 'block';
@@ -530,10 +558,9 @@
             document.getElementById('amountDisplay').textContent = amount.toLocaleString('en-US') + ' কয়েন';
             document.getElementById('totalAmount').textContent = total.toFixed(2) + ' টাকা';
 
-            const selectedOption = coinSelect.options[coinSelect.selectedIndex];
-            if (selectedOption && selectedOption.value) {
-                const requiresUsername = selectedOption.dataset.requiresUsername === 'true';
-                const requiresCoupon = selectedOption.dataset.requiresCoupon === 'true';
+            if (coin) {
+                const requiresUsername = coin.requires_username || false;
+                const requiresCoupon = coin.requires_coupon_code || false;
                 
                 usernameGroup.style.display = requiresUsername ? 'block' : 'none';
                 couponGroup.style.display = requiresCoupon ? 'block' : 'none';
@@ -552,12 +579,11 @@
             const coin = currentCoin();
             const amount = parseInt(amountInput.value || '0', 10);
             const account = accountInput.value.trim();
-            const selectedOption = coinSelect.options[coinSelect.selectedIndex];
             
-            const requiresUsername = selectedOption && selectedOption.dataset.requiresUsername === 'true';
+            const requiresUsername = coin && coin.requires_username;
             const usernameOk = !requiresUsername || usernameInput.value.trim().length > 0;
             
-            const requiresCoupon = selectedOption && selectedOption.dataset.requiresCoupon === 'true';
+            const requiresCoupon = coin && coin.requires_coupon_code;
             const couponOk = !requiresCoupon || couponInput.value.trim().length > 0;
 
             const amountOk = amount > 0;
@@ -580,9 +606,8 @@
             const account = accountInput.value.trim();
             const total = (amount / 1000) * (coin.rate || 0);
             
-            const selectedOption = coinSelect.options[coinSelect.selectedIndex];
-            const requiresUsername = selectedOption && selectedOption.dataset.requiresUsername === 'true';
-            const requiresCoupon = selectedOption && selectedOption.dataset.requiresCoupon === 'true';
+            const requiresUsername = coin.requires_username || false;
+            const requiresCoupon = coin.requires_coupon_code || false;
 
             const payload = {
                 action: "xr7_sell_request",
